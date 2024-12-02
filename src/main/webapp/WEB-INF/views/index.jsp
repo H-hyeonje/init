@@ -6,6 +6,7 @@
 <title>JSON Test</title>
 </head>
 <body>
-	여기가 시작입니다
+	<a href="Post">Post작성</a>
+	<a href="PostBoard">게시판</a>
 </body>
 </html>

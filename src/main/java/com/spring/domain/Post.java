@@ -4,6 +4,8 @@ import java.util.Date;
 
 public class Post 
 {
+	public Post() {}
+	
 	private String id;
 	private String title;
 	private String contents;
@@ -12,13 +14,15 @@ public class Post
 	private int likes;
 	private String region;
 	private boolean isPrivate;
-	private int unique;
+	private int p_unique;
 	private Date commentDate;
 	private int commentLikes;
+	private boolean commentIsAllowed;
 	private int satisfaction;
 	private Dining dining;
 	private Landmark landmark;
 	private Festival festival;
+	
 	public String getId() {
 		return id;
 	}
@@ -67,11 +71,11 @@ public class Post
 	public void setPrivate(boolean isPrivate) {
 		this.isPrivate = isPrivate;
 	}
-	public int getUnique() {
-		return unique;
+	public int getP_unique() {
+		return p_unique;
 	}
-	public void setUnique(int unique) {
-		this.unique = unique;
+	public void setP_unique(int p_unique) {
+		this.p_unique = p_unique;
 	}
 	public Date getCommentDate() {
 		return commentDate;
@@ -84,6 +88,12 @@ public class Post
 	}
 	public void setCommentLikes(int commentLikes) {
 		this.commentLikes = commentLikes;
+	}
+	public boolean isCommentIsAllowed() {
+		return commentIsAllowed;
+	}
+	public void setCommentIsAllowed(boolean commentIsAllowed) {
+		this.commentIsAllowed = commentIsAllowed;
 	}
 	public int getSatisfaction() {
 		return satisfaction;
