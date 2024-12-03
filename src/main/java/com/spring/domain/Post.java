@@ -1,6 +1,9 @@
 package com.spring.domain;
 
+import java.sql.Timestamp;
 import java.util.Date;
+
+
 
 public class Post 
 {
@@ -9,7 +12,7 @@ public class Post
 	private String id;
 	private String title;
 	private String contents;
-	private Date publishDate;
+	private Timestamp publishDate;
 	private int view;
 	private int likes;
 	private String region;
@@ -41,11 +44,11 @@ public class Post
 	public void setContents(String contents) {
 		this.contents = contents;
 	}
-	public Date getPublishDate() {
+	public Timestamp getPublishDate() {
 		return publishDate;
 	}
-	public void setPublishDate(Date publishDate) {
-		this.publishDate = publishDate;
+	public void setPublishDate(Timestamp timestamp) {
+		this.publishDate = timestamp;
 	}
 	public int getView() {
 		return view;
@@ -65,12 +68,15 @@ public class Post
 	public void setRegion(String region) {
 		this.region = region;
 	}
-	public boolean isPrivate() {
+	public boolean getIsPrivate() {
 		return isPrivate;
 	}
-	public void setPrivate(boolean isPrivate) {
-		this.isPrivate = isPrivate;
+	public void setIsPrivate(String isPrivate) {
+	    if(isPrivate != null) {
+	        this.isPrivate = "1".equals(isPrivate);
+	    }
 	}
+
 	public int getP_unique() {
 		return p_unique;
 	}

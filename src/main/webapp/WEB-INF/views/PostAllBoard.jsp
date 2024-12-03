@@ -1,14 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>    
+<%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>    
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Insert title here</title>
+<title>AllBoard</title>
 </head>
 <body>
-<table>
+	<table>
     <thead>
         <tr>
             <th></th>
@@ -19,13 +19,13 @@
         </tr>
     </thead>
     <tbody>
-        <c:forEach items="${id}" var="post" varStatus="status">
+        <c:forEach items="${All}" var="post" varStatus="loop">
             <tr>
-                <td>${id.size()-status.index}</td>
+                <td>${All.size() - loop.index}</td>
                 <td><a href="Postview/${post.p_unique}">${post.title}</a></td>
                 <td>${post.id}</td>
                 <td>${post.view}</td>
-                <td>${time[status.index]}
+                <td>${time[loop.index]}</td>
             </tr>
         </c:forEach>
     </tbody>

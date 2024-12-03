@@ -1,6 +1,11 @@
 <web-app>
   <display-name>Archetype Created Web Application</display-name>
   
+  
+  <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  
   <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
@@ -8,9 +13,7 @@
         </param-value>
   </context-param>
     
-  <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-  </listener>
+
     
     
     <!-- Servlet Context(각각 개별적으로 유저에게 지급되는 저장소)를 설정하는 파일의 위치 -->

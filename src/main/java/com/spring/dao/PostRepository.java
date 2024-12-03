@@ -6,6 +6,7 @@ import com.spring.domain.Post;
 
 public interface PostRepository {
 	public void PostSave(Post post);
-	public Post PostRead(String title,int p_unique);
+	public Post PostRead(int p_unique);
 	public List<Post> AllRead();
+	public List<Post> getBoard(String id);
 }

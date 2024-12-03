@@ -8,9 +8,12 @@
 <title>Insert title here</title>
 </head>
 <body>
-	<span>${Post.title}</span> 
-	<span>${Post.id}</span> 
+	<p>제목 :${Post.title}</p> 
+	<p>작성자:${Post.id} 조회수 :${Post.view} 작성일:${days}</p> 
+	
 	<p>${Post.contents}
-	<a href="PostBoard">게시판</a>
+	<p><a href="/localMaster/Postupdate/${Post.p_unique}">수정</a>
+		<a href="/localMaster/PostAllBoard">게시판</a>
+		<a href="/localMaster/">홈</a>
 </body>
 </html>
