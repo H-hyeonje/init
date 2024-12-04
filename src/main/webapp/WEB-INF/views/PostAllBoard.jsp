@@ -8,6 +8,7 @@
 <title>AllBoard</title>
 </head>
 <body>
+	<a href="/localMaster/">홈</a>
 	<table>
     <thead>
         <tr>
@@ -21,8 +22,8 @@
     <tbody>
         <c:forEach items="${All}" var="post" varStatus="loop">
             <tr>
-                <td>${All.size() - loop.index}</td>
-                <td><a href="Postview/${post.p_unique}">${post.title}</a></td>
+                <td>${Allnumber.get((ps-1) * 5 + loop.index)}</td>
+                <td><a href="/localMaster/Postview/${post.p_unique}">${post.title}</a></td>
                 <td>${post.id}</td>
                 <td>${post.view}</td>
                 <td>${time[loop.index]}</td>
@@ -30,6 +31,10 @@
         </c:forEach>
     </tbody>
 </table>
-	<a href="/localMaster/">홈</a>
+<br>
+ 	<c:forEach items="${total}" var="ps" >
+        	<a href="/localMaster/PostAllBoard/${ps}"><span>[${ps}]</span></a>
+        </c:forEach>
+	
 </body>
 </html>

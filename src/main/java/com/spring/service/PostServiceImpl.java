@@ -1,6 +1,7 @@
 package com.spring.service;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,15 +26,26 @@ public class PostServiceImpl implements PostService{
 	}
 
 	@Override
-	public List<Post> AllRead() {
-		List<Post> AllPost=repository.AllRead();
-		return AllPost;
+	public Map<String,Object> AllRead(int ps) {
+		Map<String,Object> result =repository.AllRead(ps);
+		return result;
 	}
 
 	@Override
-	public List<Post> getBoard(String id) {
-		List<Post> board=repository.getBoard(id);
-		return board;
+	public Map<String, Object> getBoard(String id,int ps) {
+		Map<String, Object> result=repository.getBoard(id,ps);
+		return result;
+	}
+
+	@Override
+	public int PostUpdate(Post post) {
+		int unique=repository.PostUpdate(post);
+		return unique;
+	}
+
+	@Override
+	public void PostDelete(int p_unique) {
+		repository.PostDelete(p_unique);	
 	}
 
 }

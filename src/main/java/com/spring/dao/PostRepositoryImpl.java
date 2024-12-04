@@ -2,7 +2,9 @@ package com.spring.dao;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.sql.DataSource;
@@ -10,8 +12,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSourceExtensionsKt;
+
 import org.springframework.stereotype.Repository;
 
 import com.spring.domain.*;
@@ -31,7 +32,7 @@ public class PostRepositoryImpl implements PostRepository{
 	public void PostSave(Post post) {
 		System.out.println(post.getPublishDate());
 		System.out.println(TimeZone.getDefault().getID());
-		String SQL="Insert into post(id,title,contents,region,isPrivate,satisfaction,PublishDate)"+"values(?,?,?,?,?,?,?)";
+		String SQL="Insert into post(id,title,contents,region,isPrivate,satisfaction,PublishDate) values(?,?,?,?,?,?,?)";
 		template.update(SQL,post.getId(),
 							post.getTitle(),
 							post.getContents(),
@@ -55,21 +56,49 @@ public class PostRepositoryImpl implements PostRepository{
 	}
 
 	@Override
-	public List<Post> AllRead() {
+	public Map<String,Object> AllRead(int ps) {
+		Map<String,Object> result =new HashMap<String, Object>();
 		List<Post> AllPost=new ArrayList<Post>();
-		String SQL ="select * from Post where isPrivate=1 order by publishDate desc";
-		AllPost=template.query(SQL, postRowMapper);
-		return AllPost;
+		String SQLs ="SELECT COUNT(*) FROM Post WHERE isPrivate = 1;";
+		String SQL ="select * from Post where isPrivate=1 order by publishDate desc limit ?,?";
+		AllPost=template.query(SQL,new Object[] {(ps-1)*5,5}, postRowMapper);
+		int Allpage=template.queryForObject(SQLs,Integer.class);
+		result.put("AllPost", AllPost);
+		result.put("Allpage", Allpage);
+		return result;
 	}
 
 	@Override
-	public List<Post> getBoard(String id) {
+	public Map<String, Object> getBoard(String id,int ps) {
 		System.out.println("리파지토리"+id);
 		List<Post> Board=new ArrayList<Post>();
-		String SQL="SELECT * FROM POST WHERE id=?";//And isPrivate=1
+		String SQL="SELECT * FROM POST WHERE id=? order by publishDate desc limit ?,?";//And isPrivate=1
+		Map<String, Object> result=new HashMap<String, Object>();
+		String SQLs="select count(*) FROM POST WHERE id=? order by publishDate desc";
 		
-		Board=template.query(SQL,new Object[]{id},postRowMapper);
-		return Board;
+		Board=template.query(SQL,new Object[]{id,(ps-1)*5,5},postRowMapper);
+		int pagenum=template.queryForObject(SQLs,new Object[] {id},Integer.class);
+		result.put("Board", Board);
+		result.put("pagenum", pagenum);
+		
+		return result;
+	}
+
+
+	@Override
+	public int PostUpdate(Post post) {
+		String SQL="UPDATE post SET title = ?, contents = ?, isPrivate= ?, region=?, satisfaction=? WHERE id=?";
+		template.update(SQL,post.getTitle(),post.getContents(),post.getIsPrivate(),post.getRegion(),post.getSatisfaction(),post.getId());
+		
+		return 1;
+	}
+
+
+	@Override
+	public void PostDelete(int p_unique) {
+		String SQL="delete from post where p_unique=?";
+		template.update(SQL,p_unique);
+		
 	}
 
 	

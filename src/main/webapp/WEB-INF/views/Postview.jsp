@@ -12,8 +12,9 @@
 	<p>작성자:${Post.id} 조회수 :${Post.view} 작성일:${days}</p> 
 	
 	<p>${Post.contents}
-	<p><a href="/localMaster/Postupdate/${Post.p_unique}">수정</a>
-		<a href="/localMaster/PostAllBoard">게시판</a>
+	<p><a href="/localMaster/PostupdatePage/${Post.id}/${Post.p_unique}">수정</a>
+		<a href="/localMaster/PostDelete/${Post.id}/${Post.p_unique}">삭제</a>
+		<a href="/localMaster/PostAllBoard/1">게시판</a>
 		<a href="/localMaster/">홈</a>
 </body>
 </html>

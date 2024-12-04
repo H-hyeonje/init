@@ -8,6 +8,7 @@
 <title>Insert title here</title>
 </head>
 <body>
+<a href="/localMaster/">홈</a>
 <table>
     <thead>
         <tr>
@@ -21,15 +22,20 @@
     <tbody>
         <c:forEach items="${id}" var="post" varStatus="status">
             <tr>
-                <td>${id.size()-status.index}</td>
-                <td><a href="Postview/${post.p_unique}">${post.title}</a></td>
+                <td>${pagenum.get((ps-1) * 5 + status.index)}</td>
+                <td><a href="/localMaster/Postview/${post.p_unique}">${post.title}</a></td>
                 <td>${post.id}</td>
                 <td>${post.view}</td>
                 <td>${time[status.index]}
             </tr>
         </c:forEach>
+        
     </tbody>
 </table>
-	<a href="/localMaster/">홈</a>
+<br>
+		<c:forEach items="${pages}" var="number">
+    		<span><a href="/localMaster/PostBoard/${number}?id=${id[0].id}">[${number}]</a></span>
+        </c:forEach>
+	
 </body>
 </html>

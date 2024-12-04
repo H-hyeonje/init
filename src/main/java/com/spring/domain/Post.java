@@ -25,7 +25,7 @@ public class Post
 	private Dining dining;
 	private Landmark landmark;
 	private Festival festival;
-	
+
 	public String getId() {
 		return id;
 	}
