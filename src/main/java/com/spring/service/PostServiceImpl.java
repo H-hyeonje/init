@@ -1,6 +1,5 @@
 package com.spring.service;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,38 +13,38 @@ public class PostServiceImpl implements PostService{
 	PostRepository repository;
 	
 	@Override
-	public void PostSave(Post post) {
+	public void savePost(Post post) {
 		System.out.println(post.getPublishDate());
-		repository.PostSave(post);
+		repository.savePost(post);
 	}
 
 	@Override
-	public Post PostRead(int p_unique) {
-		Post onePost=repository.PostRead(p_unique);//나중에 공개여부 boolean값 추가
+	public Post getPost(int p_unique) {
+		Post onePost=repository.getPost(p_unique);//나중에 공개여부 boolean값 추가
 		return onePost;
 	}
 
 	@Override
-	public Map<String,Object> AllRead(int ps) {
-		Map<String,Object> result =repository.AllRead(ps);
+	public Map<String,Object> getAllPosts(int ps) {
+		Map<String,Object> result =repository.getAllPosts(ps);
 		return result;
 	}
 
 	@Override
-	public Map<String, Object> getBoard(String id,int ps) {
-		Map<String, Object> result=repository.getBoard(id,ps);
+	public Map<String, Object> getUserPosts(String id,int ps) {
+		Map<String, Object> result=repository.getUserPosts(id,ps);
 		return result;
 	}
 
 	@Override
-	public int PostUpdate(Post post) {
-		int unique=repository.PostUpdate(post);
+	public int updatePost(Post post) {
+		int unique=repository.updatePost(post);
 		return unique;
 	}
 
 	@Override
-	public void PostDelete(int p_unique) {
-		repository.PostDelete(p_unique);	
+	public void deletePost(int p_unique) {
+		repository.deletePost(p_unique);	
 	}
 
 }

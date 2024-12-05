@@ -20,5 +20,9 @@
 	
 	<context:component-scan base-package="com.spring.controller" />
 	
+	<beans:bean id="mutipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<beans:property name="maxUploadSize" value="10240000"/>
+	
+	</beans:bean>
 
 </beans:beans>

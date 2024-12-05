@@ -1,7 +1,8 @@
 package com.spring.domain;
 
 import java.sql.Timestamp;
-import java.util.Date;
+
+import org.springframework.web.multipart.MultipartFile;
 
 
 
@@ -18,14 +19,23 @@ public class Post
 	private String region;
 	private boolean isPrivate;
 	private int p_unique;
-	private Date commentDate;
-	private int commentLikes;
 	private boolean commentIsAllowed;
 	private int satisfaction;
 	private Dining dining;
 	private Landmark landmark;
 	private Festival festival;
+	private MultipartFile fileImage;
 
+	
+	
+	public MultipartFile getFileImage() {
+		return fileImage;
+	}
+	public void setFileImage(MultipartFile fileImage) {
+		this.fileImage = fileImage;
+	}
+	
+	
 	public String getId() {
 		return id;
 	}
@@ -83,18 +93,7 @@ public class Post
 	public void setP_unique(int p_unique) {
 		this.p_unique = p_unique;
 	}
-	public Date getCommentDate() {
-		return commentDate;
-	}
-	public void setCommentDate(Date commentDate) {
-		this.commentDate = commentDate;
-	}
-	public int getCommentLikes() {
-		return commentLikes;
-	}
-	public void setCommentLikes(int commentLikes) {
-		this.commentLikes = commentLikes;
-	}
+
 	public boolean isCommentIsAllowed() {
 		return commentIsAllowed;
 	}

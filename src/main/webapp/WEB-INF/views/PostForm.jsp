@@ -14,6 +14,7 @@
 		<p>지역<input name="region" type="text"/>
 		<p>공개<input name="isPrivate" type="radio" value="1" required/>비공개<input name="isPrivate" type="radio" value="0"/>
 		<p>만족도<input name="satisfaction" type="number"/>
+		<p>
 		<p><input type="submit" value="작성"/>
 	</form>
 	<a href="/localMaster/">홈</a>

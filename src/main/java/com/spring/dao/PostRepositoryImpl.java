@@ -29,9 +29,7 @@ public class PostRepositoryImpl implements PostRepository{
 	
 	
 	@Override
-	public void PostSave(Post post) {
-		System.out.println(post.getPublishDate());
-		System.out.println(TimeZone.getDefault().getID());
+	public void savePost(Post post) {
 		String SQL="Insert into post(id,title,contents,region,isPrivate,satisfaction,PublishDate) values(?,?,?,?,?,?,?)";
 		template.update(SQL,post.getId(),
 							post.getTitle(),
@@ -46,7 +44,7 @@ public class PostRepositoryImpl implements PostRepository{
 	}
 
 	@Override
-	public Post PostRead(int p_unique) {
+	public Post getPost(int p_unique) {
 		//나중에 블린값추가
 	    String SelectSQL = "select * from Post where p_unique=? order by publishDate desc";//And isPrivate=1
 	    String UdateSQL = "UPDATE POST SET view=view+1 WHERE p_unique=?";//And isPrivate=1
@@ -56,20 +54,20 @@ public class PostRepositoryImpl implements PostRepository{
 	}
 
 	@Override
-	public Map<String,Object> AllRead(int ps) {
+	public Map<String,Object> getAllPosts(int ps) {
 		Map<String,Object> result =new HashMap<String, Object>();
-		List<Post> AllPost=new ArrayList<Post>();
+		List<Post> posts=new ArrayList<Post>();
 		String SQLs ="SELECT COUNT(*) FROM Post WHERE isPrivate = 1;";
 		String SQL ="select * from Post where isPrivate=1 order by publishDate desc limit ?,?";
-		AllPost=template.query(SQL,new Object[] {(ps-1)*5,5}, postRowMapper);
-		int Allpage=template.queryForObject(SQLs,Integer.class);
-		result.put("AllPost", AllPost);
-		result.put("Allpage", Allpage);
+		posts=template.query(SQL,new Object[] {(ps-1)*5,5}, postRowMapper);
+		int totalPages =template.queryForObject(SQLs,Integer.class);
+		result.put("posts", posts);
+		result.put("totalPages", totalPages);
 		return result;
 	}
 
 	@Override
-	public Map<String, Object> getBoard(String id,int ps) {
+	public Map<String, Object> getUserPosts(String id,int ps) {
 		System.out.println("리파지토리"+id);
 		List<Post> Board=new ArrayList<Post>();
 		String SQL="SELECT * FROM POST WHERE id=? order by publishDate desc limit ?,?";//And isPrivate=1
@@ -86,7 +84,7 @@ public class PostRepositoryImpl implements PostRepository{
 
 
 	@Override
-	public int PostUpdate(Post post) {
+	public int updatePost(Post post) {
 		String SQL="UPDATE post SET title = ?, contents = ?, isPrivate= ?, region=?, satisfaction=? WHERE id=?";
 		template.update(SQL,post.getTitle(),post.getContents(),post.getIsPrivate(),post.getRegion(),post.getSatisfaction(),post.getId());
 		
@@ -95,7 +93,7 @@ public class PostRepositoryImpl implements PostRepository{
 
 
 	@Override
-	public void PostDelete(int p_unique) {
+	public void deletePost(int p_unique) {
 		String SQL="delete from post where p_unique=?";
 		template.update(SQL,p_unique);
 		

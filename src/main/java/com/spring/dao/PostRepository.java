@@ -1,15 +1,15 @@
 package com.spring.dao;
 
-import java.util.List;
+
 import java.util.Map;
 
 import com.spring.domain.Post;
 
 public interface PostRepository {
-	public void PostSave(Post post);
-	public Post PostRead(int p_unique);
-	public Map<String,Object> AllRead(int ps);
-	public Map<String, Object> getBoard(String id,int ps);
-	public int PostUpdate(Post post);
-	public void PostDelete(int p_unique);
+	public void savePost(Post post);
+	public Post getPost(int p_unique);
+	public Map<String,Object> getAllPosts(int ps);
+	public Map<String, Object> getUserPosts(String id,int ps);
+	public int updatePost(Post post);
+	public void deletePost(int p_unique);
 }

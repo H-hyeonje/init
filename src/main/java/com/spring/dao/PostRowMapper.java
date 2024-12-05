@@ -20,12 +20,9 @@ public class PostRowMapper implements RowMapper<Post>{
 		post.setLikes(rs.getInt(6));
 		post.setRegion(rs.getString(7));
 		post.setIsPrivate(rs.getString(8));
-		post.setP_unique(rs.getInt(9));
-		post.setCommentDate(rs.getDate(10));
-		post.setCommentLikes(rs.getInt(11));
-		post.setCommentIsAllowed(rs.getBoolean(12));
-		post.setSatisfaction(rs.getInt(13));
-
+		post.setCommentIsAllowed(rs.getBoolean(9));
+		post.setP_unique(rs.getInt(10));
+		post.setSatisfaction(rs.getInt(11));
 		return post;
 	}
 

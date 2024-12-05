@@ -20,21 +20,21 @@
         </tr>
     </thead>
     <tbody>
-        <c:forEach items="${id}" var="post" varStatus="status">
+        <c:forEach items="${userId}" var="post" varStatus="loop">
             <tr>
-                <td>${pagenum.get((ps-1) * 5 + status.index)}</td>
+                <td>${postPageNumbers.get((ps-1)*5+loop.index)}</td>
                 <td><a href="/localMaster/Postview/${post.p_unique}">${post.title}</a></td>
                 <td>${post.id}</td>
                 <td>${post.view}</td>
-                <td>${time[status.index]}
+                <td>${formattedBoardTimes[status.index]}
             </tr>
         </c:forEach>
         
     </tbody>
 </table>
 <br>
-		<c:forEach items="${pages}" var="number">
-    		<span><a href="/localMaster/PostBoard/${number}?id=${id[0].id}">[${number}]</a></span>
+		<c:forEach items="${totalPageNumbers}" var="ps">
+    		<span><a href="/localMaster/PostBoard/${ps}?id=${userId[0].id}">[${ps}]</a></span>
         </c:forEach>
 	
 </body>

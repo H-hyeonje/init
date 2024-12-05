@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,29 +28,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class PostController {
-	SimpleDateFormat Days=new SimpleDateFormat("yy-MM-dd");
-	SimpleDateFormat Times=new SimpleDateFormat("HH:mm");
-	List<String> timeList;
+	SimpleDateFormat daysFormat=new SimpleDateFormat("yy-MM-dd");
+	SimpleDateFormat timesFormat =new SimpleDateFormat("HH:mm");
 	
-	private ArrayList<Integer> totalPage(int totalitems) {
-		ArrayList<Integer> total=new ArrayList<Integer>();
-		int i=5;
-		int page = (int) Math.ceil((double) totalitems/ i); 
+	
+	private ArrayList<Integer> calculateTotalPages(int totalItems) {
+		ArrayList<Integer> totalPages =new ArrayList<Integer>();
+		int itemsPerPage =5;
+		int page = (int) Math.ceil((double) totalItems/ itemsPerPage ); 
 		while(page>0) {
-			total.add(page);
+			totalPages .add(page);
 			page-=1;
 			
 		}
-		return total;	
+		return totalPages ;	
 	}
-	private ArrayList<Integer> number(int a) {
-		ArrayList<Integer> number=new ArrayList<Integer>();
-		while (a>0) {
-			number.add(a);
-			a-=1;
+	private ArrayList<Integer> calculatePageNumbers(int totalPages) {
+		ArrayList<Integer> pageNumbers=new ArrayList<Integer>();
+		while (totalPages>0) {
+			pageNumbers.add(totalPages);
+			totalPages-=1;
 		}
 		
-		return number;
+		return pageNumbers;
 	}
 	
 	@Autowired
@@ -62,25 +63,28 @@ public class PostController {
 	}
 	
 	@GetMapping("/Post")
-	public String Posts() {
+	public String postForm() {
 		
 		return "PostForm";
 	}
 	
 	@PostMapping("/Postadd")
-	public String Postviews(@ModelAttribute Post post) {
+	public String addPost(@ModelAttribute Post post) {
 		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
 		post.setPublishDate(timestamp);
-		System.out.println(post.getPublishDate());
-		postService.PostSave(post);
+		postService.savePost(post);
 		return "redirect:/PostAllBoard/1";
 	}
 	
 	@GetMapping("/Postview/{p_unique}")
 	public String Postviews(@PathVariable int p_unique,Model model) {
-		Post post=postService.PostRead(p_unique);//공개 여부 추가 boolean
-		String days=Days.format(post.getPublishDate());
-		model.addAttribute("days",days);
+		Post post=postService.getPost(p_unique);//공개 여부 추가 boolean
+		String publishDate=daysFormat .format(post.getPublishDate());
+		//덧글
+	
+		
+		
+		model.addAttribute("publishDate",publishDate);
 		model.addAttribute("Post",post);
 		return "Postview";
 	}
@@ -88,89 +92,100 @@ public class PostController {
 	
 	
 	@GetMapping("/PostAllBoard/{ps}")
-	public String PostAllBoard(@PathVariable int ps, Model model) {
-		Map<String, Object> result = postService.AllRead(ps);
-		timeList = new ArrayList<String>();
+	public String viewAllPosts(@PathVariable int ps, Model model) {
+		Map<String, Object> result = postService.getAllPosts(ps);
+		List<String> formattedDates = new ArrayList<String>();
 		Calendar calendar=Calendar.getInstance();
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
 		calendar.set(Calendar.MINUTE, 0);
 		calendar.set(Calendar.SECOND, 0);
 		calendar.set(Calendar.MILLISECOND, 0);
-		List<Post> AllPost=(List<Post>)result.get("AllPost");
-		int AllPage=(Integer)result.get("Allpage");
-		long MidnightMillis=calendar.getTimeInMillis();
-		for(int i=0;i<=AllPost.size()-1;i++) {
+		List<Post> allPosts=(List<Post>)result.get("posts");
+		int totalPages =(Integer)result.get("totalPages");
+		long midnightCalendar =calendar.getTimeInMillis();
+		
+		for(Post post:allPosts) {
 
-			 if (AllPost.get(i).getPublishDate().getTime()>=MidnightMillis) {
-				 String times=Times.format(AllPost.get(i).getPublishDate());
-			     timeList.add(times);   
+			 if (post.getPublishDate().getTime()>=midnightCalendar ) {
+				 String times=timesFormat .format(post.getPublishDate());
+				 formattedDates.add(times);   
 			 }
 			 else {
-				 String days=Days.format(AllPost.get(i).getPublishDate());
-				 timeList.add(days); 
+				 String days=daysFormat .format(post.getPublishDate());
+				 formattedDates.add(days); 
 			 }
 			 }
-		ArrayList<Integer> Allnumber=number(AllPage);
+		//덧글 
 		
+	
 		
-		ArrayList<Integer> total=totalPage(AllPage);
-		Collections.reverse(total);
-		model.addAttribute("Allnumber",Allnumber);
-		model.addAttribute("total", total);
-		model.addAttribute("time",timeList);
-		model.addAttribute("All",AllPost);
+		ArrayList<Integer> pageNumbers=calculateTotalPages(totalPages);
+		ArrayList<Integer> totalPagesList=calculatePageNumbers(totalPages);
+		Collections.reverse(pageNumbers);
+		model.addAttribute("pageNumbers",pageNumbers);
+		model.addAttribute("totalPagesList", totalPagesList);
+		model.addAttribute("formattedDates",formattedDates);
+		model.addAttribute("allPosts",allPosts);
 		return "PostAllBoard";
 	}
 	
 	@GetMapping("/PostBoard/{ps}")
 	public String postBoard(@RequestParam String id,@PathVariable int ps, Model model) {
-		timeList = new ArrayList<String>();
-		Map<String, Object> result=postService.getBoard(id,ps);
-		List<Post> board =(List<Post>) result.get("Board");
-		int pagenum=(int) result.get("pagenum");
-		for(int i=0;i<=board.size()-1;i++) {
-			String timeDate=Days.format(board.get(i).getPublishDate());
-			timeList.add(timeDate);}
+		List<String> formattedBoardTimes= new ArrayList<String>();
+		Map<String, Object> result=postService.getUserPosts(id,ps);
+		List<Post> userPosts =(List<Post>) result.get("Board");
+		int currentPageNumber =(int) result.get("pagenum");
+		for(Post post : userPosts) {
+			String timeDate=daysFormat .format(post.getPublishDate());
+			formattedBoardTimes.add(timeDate);}
 		
 		
-		List<Integer> pages=totalPage(pagenum);
-		Collections.reverse(pages);
-		model.addAttribute("pagenum",pagenum);
-		model.addAttribute("pages",pages);
-		model.addAttribute("time",timeList);
-		model.addAttribute("id",board);
+		ArrayList<Integer> totalPageNumbers =calculateTotalPages(currentPageNumber);
+		ArrayList<Integer> postPageNumbers=calculatePageNumbers(currentPageNumber);
+		Collections.reverse(totalPageNumbers);
+		model.addAttribute("postPageNumbers",postPageNumbers);
+		model.addAttribute("totalPageNumbers",totalPageNumbers);
+		model.addAttribute("formattedBoardTimes",formattedBoardTimes);
+		model.addAttribute("userId",userPosts);
 		return "PostBoard";
 	}
 	
 	@GetMapping("/PostupdatePage/{id}/{p_unique}")
 	public String getMethodName(@PathVariable String id,@PathVariable int p_unique, Model model) {
 		//id 세션이랑 맞는지 확인하는거 추가
-		Post post=postService.PostRead(p_unique);
-		String Private=null;
-		if(post.getIsPrivate()==true) {
-			Private="공개";
+		Post postToEdit=postService.getPost(p_unique);
+		String privacyStatus=null;
+		if(postToEdit.getIsPrivate()==true) {
+			privacyStatus="공개";
 		}else {
-			Private="비공개";
+			privacyStatus="비공개";
 
 		}
 		
-		model.addAttribute("post", post);
-		model.addAttribute("Private", Private);
+		model.addAttribute("postToEdit", postToEdit);
+		model.addAttribute("privacyStatus", privacyStatus);
 		return "PostupdatePage";
 	}
 	
 	@PostMapping("/PostUpdate")
-	public String PostUpdate(@ModelAttribute Post post) {
-		postService.PostUpdate(post);
-		System.out.println(post.getP_unique());
-		return "redirect:/Postview/"+post.getP_unique();
+	public String PostUpdate(@ModelAttribute Post updatedPost) {
+		postService.updatePost(updatedPost);
+		System.out.println(updatedPost.getP_unique());
+		return "redirect:/Postview/"+updatedPost.getP_unique();
 	}
 	
 	@GetMapping("/PostDelete/{id}/{p_unique}")
 	private String PostDelete(@PathVariable String id,@PathVariable int p_unique) {
-		postService.PostDelete(p_unique);
+		postService.deletePost(p_unique);
 		
 		return "redirect:/PostAllBoard/1";
 	}
+	
+	
+	@GetMapping("/editor")
+	public String getMethodName() {
+		return "editor";
+	}
+	
 	
 }
