@@ -19,7 +19,7 @@ public class CommentServiceImpl implements CommentService{
 	@Override
 	public List<Comment> getCommentsByPostId(int P_unique) {
 		List<Comment> commnets=commentRepository.getCommentsByPostId(P_unique);
-		return null;
+		return commnets;
 	}
 
 }

@@ -46,14 +46,22 @@ public class PostRepositoryImpl implements PostRepository{
 	}
 
 	@Override
-	public Post getPost(int p_unique) {
+	public Map<String,Object> getPost(int p_unique) {
+		Map<String,Object> Post=new HashMap<String, Object>();
+		CommetRowMapper commetRowMapper=new CommetRowMapper();
 		RowMapper<Post> postRowMapper=new PostRowMapper();
 		//나중에 블린값추가
 	    String SelectSQL = "select * from Post where p_unique=? order by publishDate desc";//And isPrivate=1
 	    String UdateSQL = "UPDATE POST SET view=view+1 WHERE p_unique=?";//And isPrivate=1
+	    String commentsSQL="select * from comment where p_unique=? order by commentDate desc";
 		Post onePost = template.queryForObject(SelectSQL,new Object[] {p_unique},postRowMapper);
+		List<Comment> comments=template.query(commentsSQL, new Object[] {p_unique},commetRowMapper);
 		template.update(UdateSQL,p_unique);
-	    return onePost;
+		
+		Post.put("comments", comments);
+		Post.put("onePost", onePost);
+		
+	    return Post;
 	}
 
 	@Override

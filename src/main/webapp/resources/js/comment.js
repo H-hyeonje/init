@@ -1,39 +1,48 @@
-function submitComment() {
-    var commentText = document.getElementById("commentText").value.trim();
-    var Punique=document.getElementById("Punique").value;
-	var id=document.getElementById("id").value;
-    if (commentText === "") {
-        alert("댓글 내용을 입력해주세요.");
-        return;
-    }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/localMaster/addComment", true);
+function submitComment(){
+	var commentText= document.getElementById("commentText").value;
+	var userid=document.getElementById("id").value;
+	var postid=document.getElementById("Punique").value;
+	
+	if(commentText.trim()===""){
+		alert("댓글을 입력해주세요");
+		return;
+	}
+	
+	var xhr=new XMLHttpRequest();
+	xhr.open("post","/localMaster/addComment",true);
 	xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
 	
 	var data=JSON.stringify({
-		id : id,
-		comments: commentText,
-		p_unique: Punique
-	})
+		comments : commentText,
+		id : userid,
+		p_unique : parseInt(postid)
+		
+	});
 	
-	xhr.send(data)
-  
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            alert("댓글이 성공적으로 추가되었습니다.");
-            document.getElementById("commentText").value = ''; // 입력창 초기화
-        } else {
-            alert("댓글 추가에 실패했습니다.");
-        }
-    };
-
-    xhr.onerror = function() {
-        alert("요청 중 문제가 발생했습니다.");
-    };
+	
+   xhr.onreadystatechange =function(){
+	 if(xhr.readyState === XMLHttpRequest.DONE && xhr.status===200){
+			var response= JSON.parse(xhr.responseText);
+			comments(response);
+		 document.getElementById("commentText").value="";
+		
+		
+	 }
+   }
+   xhr.send(data);
 }
 
-function updateCommentList(comments){
+function comments(response){
+	var commentList =response.comments;
+	var dateList =response.formattedDates;
+	var str="";
 	var commentListContainer=document.getElementById("commentListContainer");
+	for(var i=0;i<commentList.length;i++){
+		str += "<div class='comment-item'>";
+		str +="<p>"+commentList[i].id+" "+dateList[i]+" "+commentList[i].commentLikes+"</p>";
+		str +="<p>"+commentList[i].comments+"</p>";
+		str += "</div>";
+	}
+	commentListContainer.innerHTML=str;
 }
-

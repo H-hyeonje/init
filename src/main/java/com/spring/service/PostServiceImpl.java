@@ -19,8 +19,8 @@ public class PostServiceImpl implements PostService{
 	}
 
 	@Override
-	public Post getPost(int p_unique) {
-		Post onePost=repository.getPost(p_unique);//나중에 공개여부 boolean값 추가
+	public Map<String,Object> getPost(int p_unique) {
+		Map<String,Object> onePost=repository.getPost(p_unique);//나중에 공개여부 boolean값 추가
 		return onePost;
 	}
 

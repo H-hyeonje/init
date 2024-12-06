@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import com.spring.domain.Comment;
-import com.spring.domain.Post;
+import com.spring.domain.*;
+
 import com.spring.service.PostService;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -79,8 +79,12 @@ public class PostController {
 	
 	@GetMapping("/Postview/{p_unique}")
 	public String Postviews(@PathVariable int p_unique,Model model) {
-		Post post=postService.getPost(p_unique);//공개 여부 추가 boolean
+		Map<String, Object> onePost =postService.getPost(p_unique);//공개 여부 추가 boolean
+		Post post=(Post) onePost.get("onePost");
+		List<Comment> comments=(List<Comment>)onePost.get("comments");
+		
 		String publishDate=daysFormat .format(post.getPublishDate());
+		model.addAttribute("comments",comments);
 		model.addAttribute("publishDate",publishDate);
 		model.addAttribute("Post",post);
 		return "Postview";
@@ -150,8 +154,8 @@ public class PostController {
 	@GetMapping("/PostupdatePage/{id}/{p_unique}")
 	public String getMethodName(@PathVariable String id,@PathVariable int p_unique, Model model) {
 		//id 세션이랑 맞는지 확인하는거 추가
-		Post postToEdit=postService.getPost(p_unique);
-
+		Map<String,Object> Post=postService.getPost(p_unique);
+		Post postToEdit=(Post) Post.get("onePost");
 		String privacyStatus=null;
 		if(postToEdit.getIsPrivate()==true) {
 			privacyStatus="공개";
