@@ -22,6 +22,11 @@
 		<textarea rows="3" cols="40" id="commentText"></textarea>	
 		<button type="button" onclick="submitComment()">댓글 작성</button>
 	</form>
+
+	<div id="commentListContainer">
+	
+	</div>
+	
 	<p><a href="/localMaster/PostupdatePage/${Post.id}/${Post.p_unique}">수정</a>
 		<a href="/localMaster/PostDelete/${Post.id}/${Post.p_unique}">삭제</a>
 		<a href="/localMaster/PostAllBoard/1">게시판</a>

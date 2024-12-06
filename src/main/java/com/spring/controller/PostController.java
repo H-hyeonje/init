@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 
+import com.spring.domain.Comment;
 import com.spring.domain.Post;
 import com.spring.service.PostService;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -80,10 +81,6 @@ public class PostController {
 	public String Postviews(@PathVariable int p_unique,Model model) {
 		Post post=postService.getPost(p_unique);//공개 여부 추가 boolean
 		String publishDate=daysFormat .format(post.getPublishDate());
-		//덧글
-	
-		
-		
 		model.addAttribute("publishDate",publishDate);
 		model.addAttribute("Post",post);
 		return "Postview";
@@ -154,6 +151,7 @@ public class PostController {
 	public String getMethodName(@PathVariable String id,@PathVariable int p_unique, Model model) {
 		//id 세션이랑 맞는지 확인하는거 추가
 		Post postToEdit=postService.getPost(p_unique);
+
 		String privacyStatus=null;
 		if(postToEdit.getIsPrivate()==true) {
 			privacyStatus="공개";

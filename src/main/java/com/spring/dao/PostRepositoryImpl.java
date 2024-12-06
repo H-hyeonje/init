@@ -19,8 +19,9 @@ import com.spring.domain.*;
 @Repository
 public class PostRepositoryImpl implements PostRepository{
 	
-	RowMapper<Post> postRowMapper=new PostRowMapper();
+	
 	private JdbcTemplate template;
+	
 	
 	@Autowired
 	public void setJdbctemplate(DataSource dataSource) {
@@ -30,6 +31,7 @@ public class PostRepositoryImpl implements PostRepository{
 	
 	@Override
 	public void savePost(Post post) {
+		RowMapper<Post> postRowMapper=new PostRowMapper();
 		String SQL="Insert into post(id,title,contents,region,isPrivate,satisfaction,PublishDate) values(?,?,?,?,?,?,?)";
 		template.update(SQL,post.getId(),
 							post.getTitle(),
@@ -45,6 +47,7 @@ public class PostRepositoryImpl implements PostRepository{
 
 	@Override
 	public Post getPost(int p_unique) {
+		RowMapper<Post> postRowMapper=new PostRowMapper();
 		//나중에 블린값추가
 	    String SelectSQL = "select * from Post where p_unique=? order by publishDate desc";//And isPrivate=1
 	    String UdateSQL = "UPDATE POST SET view=view+1 WHERE p_unique=?";//And isPrivate=1
@@ -55,6 +58,7 @@ public class PostRepositoryImpl implements PostRepository{
 
 	@Override
 	public Map<String,Object> getAllPosts(int ps) {
+		RowMapper<Post> postRowMapper=new PostRowMapper();
 		Map<String,Object> result =new HashMap<String, Object>();
 		List<Post> posts=new ArrayList<Post>();
 		String SQLs ="SELECT COUNT(*) FROM Post WHERE isPrivate = 1;";
@@ -68,6 +72,7 @@ public class PostRepositoryImpl implements PostRepository{
 
 	@Override
 	public Map<String, Object> getUserPosts(String id,int ps) {
+		RowMapper<Post> postRowMapper=new PostRowMapper();
 		System.out.println("리파지토리"+id);
 		List<Post> Board=new ArrayList<Post>();
 		String SQL="SELECT * FROM POST WHERE id=? order by publishDate desc limit ?,?";//And isPrivate=1

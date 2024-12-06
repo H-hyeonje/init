@@ -1,5 +1,7 @@
 package com.spring.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +15,11 @@ public class CommentServiceImpl implements CommentService{
 	@Override
 	public void addComment(Comment comment) {
 		commentRepository.addComment(comment);
-		
+	}
+	@Override
+	public List<Comment> getCommentsByPostId(int P_unique) {
+		List<Comment> commnets=commentRepository.getCommentsByPostId(P_unique);
+		return null;
 	}
 
 }

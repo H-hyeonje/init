@@ -9,6 +9,9 @@ public class Comment {
 	private int commentLikes;
 	private int c_unique;
 	private int p_unique;
+	
+	public Comment() {};
+	
 	public String getComments() {
 		return comments;
 	}

@@ -14,7 +14,7 @@
   </context-param>
     
 
-    <resources mapping="/resources/**" location="/resources/" />
+   <resources mapping="/resources/**" location="/resources/" />
     
     <!-- Servlet Context(각각 개별적으로 유저에게 지급되는 저장소)를 설정하는 파일의 위치 -->
   <servlet>

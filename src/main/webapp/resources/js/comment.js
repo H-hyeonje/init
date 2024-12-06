@@ -33,3 +33,7 @@ function submitComment() {
     };
 }
 
+function updateCommentList(comments){
+	var commentListContainer=document.getElementById("commentListContainer");
+}
+
