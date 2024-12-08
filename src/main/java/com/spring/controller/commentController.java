@@ -21,17 +21,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 
 
-@RestController
+@Controller
 public class commentController {
-	SimpleDateFormat daysFormat=new SimpleDateFormat("yyyy.MM.dd.HH:mm");
+	SimpleDateFormat daysFormat=new SimpleDateFormat("yy.MM.dd.HH:mm");
 	SimpleDateFormat timesFormat=new SimpleDateFormat("HH:mm");
-	
+	zerotime zero =new zerotime();
 	@Autowired
 	CommentService commentService;
+	
+	
 	@PostMapping(value = "/addComment", consumes = "application/json", produces = "application/json")
+	@ResponseBody
 	public Map<String,Object> addComment(@RequestBody Comment comment) {
 		Map<String,Object> Comment=new HashMap<String,Object>();
 	    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -39,21 +43,17 @@ public class commentController {
 	    comment.setCommentDate(timestamp);
 	    commentService.addComment(comment);
 	    List<Comment> comments = commentService.getCommentsByPostId(comment.getP_unique());
-		Calendar calendar=Calendar.getInstance();
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
-		long midnightCalendar =calendar.getTimeInMillis();
+
+		long midnightCalendar =zero.zerotime();
 	    System.out.println(comments.get(0).getCommentDate());
 	    
 	    for(int i=1;i<comments.size();i++) {
-			 if (comments.get(0).getCommentDate().getTime()>=midnightCalendar ) {
-				 String times=timesFormat .format(comments.get(0).getCommentDate());
+			 if (comments.get(i).getCommentDate().getTime()>=midnightCalendar ) {
+				 String times=timesFormat .format(comments.get(i).getCommentDate());
 				 formattedDates.add(times);   
 			 }
 			 else {
-				 String days=daysFormat .format(comments.get(0).getCommentDate());
+				 String days=daysFormat .format(comments.get(i).getCommentDate());
 				 formattedDates.add(days); 
 			 }
 	    	
@@ -65,7 +65,7 @@ public class commentController {
 	    return Comment; 
 	}
 	
-	
+
 	
 	
 }

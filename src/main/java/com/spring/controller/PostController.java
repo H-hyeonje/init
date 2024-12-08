@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class PostController {
 	SimpleDateFormat daysFormat=new SimpleDateFormat("yy-MM-dd");
 	SimpleDateFormat timesFormat =new SimpleDateFormat("HH:mm");
-	
+	zerotime zero =new zerotime();
 	
 	private ArrayList<Integer> calculateTotalPages(int totalItems) {
 		ArrayList<Integer> totalPages =new ArrayList<Integer>();
@@ -82,8 +82,23 @@ public class PostController {
 		Map<String, Object> onePost =postService.getPost(p_unique);//공개 여부 추가 boolean
 		Post post=(Post) onePost.get("onePost");
 		List<Comment> comments=(List<Comment>)onePost.get("comments");
-		
+		List<String> formattedDates = new ArrayList<String>();
+	    System.out.println(comments.get(0).getCommentDate());
+	    long midnightCalendar =zero.zerotime();
+	    for(int i=1;i<comments.size();i++) {
+			 if (comments.get(i).getCommentDate().getTime()>=midnightCalendar ) {
+				 String times=timesFormat .format(comments.get(i).getCommentDate());
+				 formattedDates.add(times);   
+			 }
+			 else {
+				 String days=daysFormat .format(comments.get(i).getCommentDate());
+				 formattedDates.add(days); 
+			 }
+	    	
+	    }
+	    
 		String publishDate=daysFormat .format(post.getPublishDate());
+		model.addAttribute("formattedDates",formattedDates);
 		model.addAttribute("comments",comments);
 		model.addAttribute("publishDate",publishDate);
 		model.addAttribute("Post",post);
@@ -96,15 +111,9 @@ public class PostController {
 	public String viewAllPosts(@PathVariable int ps, Model model) {
 		Map<String, Object> result = postService.getAllPosts(ps);
 		List<String> formattedDates = new ArrayList<String>();
-		Calendar calendar=Calendar.getInstance();
-		calendar.set(Calendar.HOUR_OF_DAY, 0);
-		calendar.set(Calendar.MINUTE, 0);
-		calendar.set(Calendar.SECOND, 0);
-		calendar.set(Calendar.MILLISECOND, 0);
 		List<Post> allPosts=(List<Post>)result.get("posts");
 		int totalPages =(Integer)result.get("totalPages");
-		long midnightCalendar =calendar.getTimeInMillis();
-		
+		long midnightCalendar =zero.zerotime();
 		for(Post post:allPosts) {
 
 			 if (post.getPublishDate().getTime()>=midnightCalendar ) {
@@ -116,10 +125,6 @@ public class PostController {
 				 formattedDates.add(days); 
 			 }
 			 }
-		//덧글 
-		
-	
-		
 		ArrayList<Integer> pageNumbers=calculateTotalPages(totalPages);
 		ArrayList<Integer> totalPagesList=calculatePageNumbers(totalPages);
 		Collections.reverse(pageNumbers);

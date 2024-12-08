@@ -1,3 +1,15 @@
+document.addEventListener('DOMContentLoaded', function() {
+    // AJAX 요청으로 댓글 데이터 가져오기
+    $.ajax({
+        url: '댓글을_가져오는_URL',
+        type: 'GET',
+        success: comments,  // 성공 시 comments 함수 실행
+        error: function(xhr, status, error) {
+            console.error('댓글 로딩 실패:', error);
+        }
+    });
+});
+
 function submitComment(){
 	var commentText= document.getElementById("commentText").value;
 	var userid=document.getElementById("id").value;
@@ -40,7 +52,7 @@ function comments(response){
 	var commentListContainer=document.getElementById("commentListContainer");
 	for(var i=0;i<commentList.length;i++){
 		str += "<div class='comment-item'>";
-		str +="<p>"+commentList[i].id+" "+dateList[i]+" "+commentList[i].commentLikes+"</p>";
+		str +="<p><b>"+commentList[i].id+"</b> "+dateList[i]+"<button id='like-"+commentList[i].c_unique+"'>❤️"+commentList[i].commentLikes+"</button></p>";
 		str +="<p>"+commentList[i].comments+"</p>";
 		str += "</div>";
 	}

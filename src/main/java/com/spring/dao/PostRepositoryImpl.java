@@ -55,9 +55,8 @@ public class PostRepositoryImpl implements PostRepository{
 	    String UdateSQL = "UPDATE POST SET view=view+1 WHERE p_unique=?";//And isPrivate=1
 	    String commentsSQL="select * from comment where p_unique=? order by commentDate desc";
 		Post onePost = template.queryForObject(SelectSQL,new Object[] {p_unique},postRowMapper);
-		List<Comment> comments=template.query(commentsSQL, new Object[] {p_unique},commetRowMapper);
+		List<Comment> comments=template.query(commentsSQL,new Object[] {p_unique},commetRowMapper);
 		template.update(UdateSQL,p_unique);
-		
 		Post.put("comments", comments);
 		Post.put("onePost", onePost);
 		

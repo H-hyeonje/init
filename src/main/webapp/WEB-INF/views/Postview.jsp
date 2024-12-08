@@ -128,9 +128,13 @@
     </form>
 
     <div id="commentListContainer" class="comment-list">
-
+	<c:forEach items="${comments}" var="commentList" varStatus="loop">
+		<div class='comment-item'>
+		<p><b>${commentList.id }</b> ${formattedDates[loop.index]} <button id="like-${commentList.c_unique}">❤️${commentList.commentLikes}</button></p>
+		<p>${commentList.comments}</p>
+		</div>
+	</c:forEach>
     </div>
-
     <div class="action-links">
         <a href="/localMaster/PostupdatePage/${Post.id}/${Post.p_unique}">수정</a>
         <a href="/localMaster/PostDelete/${Post.id}/${Post.p_unique}">삭제</a>
