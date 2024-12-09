@@ -29,30 +29,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class PostController {
-	SimpleDateFormat daysFormat=new SimpleDateFormat("yy-MM-dd");
+	SimpleDateFormat daysFormat=new SimpleDateFormat("yy.MM.dd.HH:mm");
 	SimpleDateFormat timesFormat =new SimpleDateFormat("HH:mm");
 	zerotime zero =new zerotime();
-	
-	private ArrayList<Integer> calculateTotalPages(int totalItems) {
-		ArrayList<Integer> totalPages =new ArrayList<Integer>();
-		int itemsPerPage =5;
-		int page = (int) Math.ceil((double) totalItems/ itemsPerPage ); 
-		while(page>0) {
-			totalPages .add(page);
-			page-=1;
-			
-		}
-		return totalPages ;	
-	}
-	private ArrayList<Integer> calculatePageNumbers(int totalPages) {
-		ArrayList<Integer> pageNumbers=new ArrayList<Integer>();
-		while (totalPages>0) {
-			pageNumbers.add(totalPages);
-			totalPages-=1;
-		}
-		
-		return pageNumbers;
-	}
+	page Page=new page();
+
 	
 	@Autowired
 	PostService postService;
@@ -82,10 +63,11 @@ public class PostController {
 		Map<String, Object> onePost =postService.getPost(p_unique);//공개 여부 추가 boolean
 		Post post=(Post) onePost.get("onePost");
 		List<Comment> comments=(List<Comment>)onePost.get("comments");
+		int commentnum=(int) onePost.get("commentnum");
+		ArrayList<Integer> totalPage=Page.calculateTotalPages(commentnum);
 		List<String> formattedDates = new ArrayList<String>();
-	    System.out.println(comments.get(0).getCommentDate());
 	    long midnightCalendar =zero.zerotime();
-	    for(int i=1;i<comments.size();i++) {
+	    for(int i=0;i<comments.size();i++) {
 			 if (comments.get(i).getCommentDate().getTime()>=midnightCalendar ) {
 				 String times=timesFormat .format(comments.get(i).getCommentDate());
 				 formattedDates.add(times);   
@@ -96,8 +78,16 @@ public class PostController {
 			 }
 	    	
 	    }
-	    
+	    int tol = 0;
+	    if (totalPage != null && !totalPage.isEmpty()) {  // totalPage가 null이 아니고 비어있지 않은지 확인
+	        tol = totalPage.getLast();  // 정상적으로 getLast() 호출
+	    } else {
+	        // totalPage가 null이거나 비어있을 경우 기본값 설정
+	        tol = 0;
+	    }
 		String publishDate=daysFormat .format(post.getPublishDate());
+		model.addAttribute("tol",tol);
+		model.addAttribute("totalPage",totalPage);
 		model.addAttribute("formattedDates",formattedDates);
 		model.addAttribute("comments",comments);
 		model.addAttribute("publishDate",publishDate);
@@ -125,9 +115,10 @@ public class PostController {
 				 formattedDates.add(days); 
 			 }
 			 }
-		ArrayList<Integer> pageNumbers=calculateTotalPages(totalPages);
-		ArrayList<Integer> totalPagesList=calculatePageNumbers(totalPages);
-		Collections.reverse(pageNumbers);
+		
+		ArrayList<Integer> pageNumbers=Page.calculateTotalPages(totalPages);
+		ArrayList<Integer> totalPagesList=Page.calculatePageNumbers(totalPages);
+		
 		model.addAttribute("pageNumbers",pageNumbers);
 		model.addAttribute("totalPagesList", totalPagesList);
 		model.addAttribute("formattedDates",formattedDates);
@@ -146,8 +137,8 @@ public class PostController {
 			formattedBoardTimes.add(timeDate);}
 		
 		
-		ArrayList<Integer> totalPageNumbers =calculateTotalPages(currentPageNumber);
-		ArrayList<Integer> postPageNumbers=calculatePageNumbers(currentPageNumber);
+		ArrayList<Integer> totalPageNumbers =Page.calculateTotalPages(currentPageNumber);
+		ArrayList<Integer> postPageNumbers=Page.calculatePageNumbers(currentPageNumber);
 		Collections.reverse(totalPageNumbers);
 		model.addAttribute("postPageNumbers",postPageNumbers);
 		model.addAttribute("totalPageNumbers",totalPageNumbers);

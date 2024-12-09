@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <!DOCTYPE html>
 <html>
 <head>
@@ -134,7 +135,16 @@
 		<p>${commentList.comments}</p>
 		</div>
 	</c:forEach>
+	<div id="page">
+	<input type="hidden" id="pages" value="${tol}"><p>
+	<c:forEach items="${totalPage}" var="total" varStatus="loop">
+		<c:if test="${total>=1}">
+		<button id="page-${total}">[${total}]</button>
+		</c:if>
+	</c:forEach>
+	</div>
     </div>
+    
     <div class="action-links">
         <a href="/localMaster/PostupdatePage/${Post.id}/${Post.p_unique}">수정</a>
         <a href="/localMaster/PostDelete/${Post.id}/${Post.p_unique}">삭제</a>

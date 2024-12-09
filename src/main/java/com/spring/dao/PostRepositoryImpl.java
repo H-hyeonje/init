@@ -53,10 +53,13 @@ public class PostRepositoryImpl implements PostRepository{
 		//나중에 블린값추가
 	    String SelectSQL = "select * from Post where p_unique=? order by publishDate desc";//And isPrivate=1
 	    String UdateSQL = "UPDATE POST SET view=view+1 WHERE p_unique=?";//And isPrivate=1
-	    String commentsSQL="select * from comment where p_unique=? order by commentDate desc";
+	    String commentsSQL="SELECT * FROM comment WHERE p_unique = ? ORDER BY commentDate ASC LIMIT 5";
+	    String commentnumSQL="select count(*) from comment where p_unique=?";
 		Post onePost = template.queryForObject(SelectSQL,new Object[] {p_unique},postRowMapper);
 		List<Comment> comments=template.query(commentsSQL,new Object[] {p_unique},commetRowMapper);
+		int commentnum=template.queryForObject(commentnumSQL,new Object[] {p_unique},Integer.class);
 		template.update(UdateSQL,p_unique);
+		Post.put("commentnum", commentnum);
 		Post.put("comments", comments);
 		Post.put("onePost", onePost);
 		

@@ -8,17 +8,15 @@ import com.spring.service.CommentService;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -30,42 +28,62 @@ public class commentController {
 	SimpleDateFormat daysFormat=new SimpleDateFormat("yy.MM.dd.HH:mm");
 	SimpleDateFormat timesFormat=new SimpleDateFormat("HH:mm");
 	zerotime zero =new zerotime();
+	page Page=new page();
+	
+	
 	@Autowired
 	CommentService commentService;
 	
 	
 	@PostMapping(value = "/addComment", consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Map<String,Object> addComment(@RequestBody Comment comment) {
-		Map<String,Object> Comment=new HashMap<String,Object>();
-	    Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-		List<String> formattedDates = new ArrayList<String>();
-	    comment.setCommentDate(timestamp);
-	    commentService.addComment(comment);
-	    List<Comment> comments = commentService.getCommentsByPostId(comment.getP_unique());
-
-		long midnightCalendar =zero.zerotime();
-	    System.out.println(comments.get(0).getCommentDate());
+	public void addComment(@RequestBody Comment comment) {
+		Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+		comment.setCommentDate(timestamp);
+		
+		commentService.addComment(comment);
+	
+	}
+	
+	
+	@GetMapping(value = "/readComment", produces = "application/json")
+	@ResponseBody
+	public Map<String, Object> getCommentList(@RequestParam int p_unique, @RequestParam int page) {
+	    ArrayList<String> formattedDates=new ArrayList<String>();
+	    Map<String, Object> result = commentService.getcommentList(p_unique, page);
 	    
-	    for(int i=1;i<comments.size();i++) {
-			 if (comments.get(i).getCommentDate().getTime()>=midnightCalendar ) {
-				 String times=timesFormat .format(comments.get(i).getCommentDate());
+	    List<Comment> comment=(List<Comment>)result.get("commnets");
+	    long midnightCalendar=zero.zerotime();
+	    for(int i=0;i<comment.size();i++) {
+	    	if(comment.get(i).getCommentDate().getTime()>=midnightCalendar) {
+	    		 String times=timesFormat .format(comment.get(i).getCommentDate());
 				 formattedDates.add(times);   
 			 }
 			 else {
-				 String days=daysFormat .format(comments.get(i).getCommentDate());
+				 String days=daysFormat .format(comment.get(i).getCommentDate());
 				 formattedDates.add(days); 
 			 }
 	    	
-	    }
-	    Comment.put("comments", comments);
-	    Comment.put("formattedDates", formattedDates);
-	    
-	    
-	    return Comment; 
 	}
-	
+	   
+	    
+	    List<Integer> pagenum=Page.calculateTotalPages((int) result.get("pagenum"));
+	    System.out.println("왔냐"+pagenum.getLast());
+	    int tol = 0;
+	    if (pagenum != null && !pagenum.isEmpty()) {  // totalPage가 null이 아니고 비어있지 않은지 확인
+	        tol = pagenum.getLast();  // 정상적으로 getLast() 호출
+	    } else {
+	        // totalPage가 null이거나 비어있을 경우 기본값 설정
+	        tol = 0;
+	    }
+	    result.put("tol", tol);
+	    result.put("pagenum", pagenum);
+	    result.put("comment", comment);
+	    result.put("formattedDates", formattedDates);
+	    
+		return result;
 
 	
 	
+}
 }

@@ -1,6 +1,6 @@
 package com.spring.service;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -17,9 +17,9 @@ public class CommentServiceImpl implements CommentService{
 		commentRepository.addComment(comment);
 	}
 	@Override
-	public List<Comment> getCommentsByPostId(int P_unique) {
-		List<Comment> commnets=commentRepository.getCommentsByPostId(P_unique);
-		return commnets;
+	public Map<String, Object> getcommentList(int P_unique,int page) {
+		Map<String, Object> result=commentRepository.getcommentList(P_unique,page);
+		return result;
 	}
 
 }

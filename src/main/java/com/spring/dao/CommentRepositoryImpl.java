@@ -5,7 +5,9 @@ package com.spring.dao;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -35,12 +37,18 @@ private JdbcTemplate template;
 
 
 	@Override
-	public List<Comment> getCommentsByPostId(int P_unique) {
+	public Map<String, Object> getcommentList(int P_unique,int page) {
 		CommetRowMapper commetRowMapper=new CommetRowMapper();
+		Map<String, Object> result=new HashMap<String, Object>();
 		List<Comment> commnets=new ArrayList<Comment>();
-		String commentsSQL="select * from comment where p_unique=? order by commentDate desc";
-		commnets=template.query(commentsSQL, new Object[] {P_unique}, commetRowMapper);
-		return commnets;
+		System.out.println(page);
+		String commentsSQL="SELECT * FROM (SELECT * FROM comment WHERE p_unique =? ORDER BY commentDate) AS subquery ORDER BY commentDate asc LIMIT ?, 5";
+		String commentnumSQL="select count(*) from comment where p_unique=?";
+		commnets=template.query(commentsSQL, new Object[] {P_unique,page}, commetRowMapper);
+		int pagenum=template.queryForObject(commentnumSQL,new Object[] {P_unique}, Integer.class);
+		result.put("commnets", commnets);
+		result.put("pagenum", pagenum);
+		return result;
 	}
 
 }
