@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 
 import org.springframework.web.bind.annotation.PostMapping;
@@ -80,6 +81,9 @@ public class commentController {
 	        // totalPage가 null이거나 비어있을 경우 기본값 설정
 	        tol = 0;
 	    }
+	 
+	    
+	    System.out.println("tol"+tol);
 	    result.put("tol", tol);
 	    result.put("pagenum", pagenum);
 	    result.put("comment", comment);
@@ -102,12 +106,26 @@ public class commentController {
 	
 	@PostMapping(value = "/commentDelete", consumes = "application/json", produces = "application/json")
 	@ResponseBody
-	public Map<String, Object> commentDelete(@RequestBody Comment comment) {
+	public ResponseEntity<Map<String, Object>> commentDelete(@RequestBody Comment comment) {
 	    int remainingComments = commentService.commentDelete(comment);
-	    Map<String, Object> response = new HashMap<String, Object>();
+	    System.out.println("남은 댓글 수: " + remainingComments);
+
+	    int currentPage = calculateCurrentPage(remainingComments);
+	    List<Integer> pageNumbers = Page.calculatePageNumbers(remainingComments);
+	    
+	    Map<String, Object> response = new HashMap<>();
 	    response.put("remainingComments", remainingComments);
-	    response.put("maxPage", Math.ceil(remainingComments / 5.0));
-	    return response;
+	    response.put("currentPage", currentPage);
+	    response.put("pageNumbers", pageNumbers);
+
+	    return ResponseEntity.ok(response);
+	}
+
+	private int calculateCurrentPage(int remainingComments) {
+	    if (remainingComments == 0) {
+	        return 0;
+	    }
+	    return (remainingComments - 1) / 5 + 1;
 	}
 	
 	

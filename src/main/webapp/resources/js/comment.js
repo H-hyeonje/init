@@ -106,29 +106,28 @@ $("#commentListContainer").on("click", ".del", function() {
         success: function(response) {
             console.log("삭제 성공!");
             
-            var nums = response;  // 남은 댓글 수
-            var page = Number($("#pages").val());  // 현재 페이지 번호
+            var remainingComments = response.remainingComments;
+            var currentPage = response.currentPage;
+            var pageNumbers = response.pageNumbers;
 
-            // 댓글이 모두 삭제되면 페이지 번호를 1로 설정
-            if (nums % 5 === 0 && page > 1) {
-       
-                page = page - 1;
+            // 현재 페이지에 댓글이 없으면 이전 페이지로 이동
+            if (currentPage > 1 && remainingComments % 5 === 0) {
+                currentPage--;
             }
-			console.log("여기page");
+
             // 댓글 목록을 다시 불러옴
             $.ajax({
-                url: "/localMaster/readComment",  // 댓글 목록 조회 URL
-                type: "GET",  // GET 요청
+                url: "/localMaster/readComment",
+                type: "GET",
                 data: {
                     p_unique: postid,
-                    page: page  // 업데이트된 페이지 번호 전달
+                    page: currentPage
                 },
                 success: function(response) {
-                    comments(response);  // 댓글 목록 처리 함수 호출
-                     // 댓글 입력란 비우기
+                    comments(response);
                 },
                 error: function(xhr, status, error) {
-                    console.error("댓글 추가 실패:", error);
+                    console.error("댓글 목록 조회 실패:", error);
                 }
             });
         },
@@ -137,14 +136,47 @@ $("#commentListContainer").on("click", ".del", function() {
         }
     });
 });
-
-	
-	
 	
 	
 	
 
 
+
+
+function comments(response) {
+    var tol = response.tol;
+    var pagenum = response.pagenum;
+    var commentList = response.comment;
+    var dateList = response.formattedDates;
+
+    var str = "";
+    var str2 = "";
+
+ 	console.log("넘"+Object.keys(commentList).length)
+ 	console.log("넘2:"+tol)
+	if(Object.keys(commentList).length===5){
+	tol= Number(tol) + 1;
+	}
+
+    $.each(commentList, function(i, comment) {
+        str += "<div class='comment-item'>";
+        str += "<p><b>" + comment.id + "</b> " + dateList[i] + 
+               " <button class='like' data-num='" + comment.c_unique + "'>❤️" + comment.commentLikes + "</button>" +
+               " <button class='del' data-del='" + comment.c_unique + "'>X</button></p>";
+        str += "<p>" + comment.comments + "</p>";
+        str += "</div>";
+    });
+
+    $.each(pagenum, function(i, num) {
+        str2 += " <button class='commentPaging' data-page='" + num + "'>[" + num + "]</button> ";
+    });
+
+    $("#commentListContainer").html(
+        str + 
+        "<input type='hidden' id='pages' value='" + tol + "'>" + 
+        "<div id='page'> " + str2 + " </div>"
+    );
+}
 
 
 function comments(response) {
