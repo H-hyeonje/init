@@ -21,5 +21,17 @@ public class CommentServiceImpl implements CommentService{
 		Map<String, Object> result=commentRepository.getcommentList(P_unique,page);
 		return result;
 	}
-
+	@Override
+	public int updateLike(int c_unique) {
+		int like=commentRepository.updateLike(c_unique);
+		return like;
+	}
+	@Override
+	public int commentDelete(Comment comment) {
+		int pagenum=commentRepository.commentDelete(comment);
+		return pagenum;
+	}
+	
+	
+	
 }

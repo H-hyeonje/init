@@ -39,9 +39,8 @@ public class PostServiceImpl implements PostService{
 	}
 
 	@Override
-	public int updatePost(Post post) {
-		int unique=repository.updatePost(post);
-		return unique;
+	public void updatePost(Post post) {
+		repository.updatePost(post);
 	}
 
 	@Override

@@ -148,7 +148,7 @@ public class PostController {
 	}
 	
 	@GetMapping("/PostupdatePage/{id}/{p_unique}")
-	public String getMethodName(@PathVariable String id,@PathVariable int p_unique, Model model) {
+	public String updatePage(@PathVariable String id,@PathVariable int p_unique, Model model) {
 		//id 세션이랑 맞는지 확인하는거 추가
 		Map<String,Object> Post=postService.getPost(p_unique);
 		Post postToEdit=(Post) Post.get("onePost");

@@ -38,17 +38,44 @@ private JdbcTemplate template;
 
 	@Override
 	public Map<String, Object> getcommentList(int P_unique,int page) {
+		int lastPage = Math.max((page - 1) * 5, 0);
 		CommetRowMapper commetRowMapper=new CommetRowMapper();
 		Map<String, Object> result=new HashMap<String, Object>();
 		List<Comment> commnets=new ArrayList<Comment>();
 		System.out.println(page);
 		String commentsSQL="SELECT * FROM (SELECT * FROM comment WHERE p_unique =? ORDER BY commentDate) AS subquery ORDER BY commentDate asc LIMIT ?, 5";
 		String commentnumSQL="select count(*) from comment where p_unique=?";
-		commnets=template.query(commentsSQL, new Object[] {P_unique,page}, commetRowMapper);
-		int pagenum=template.queryForObject(commentnumSQL,new Object[] {P_unique}, Integer.class);
+		commnets=template.query(commentsSQL,commetRowMapper,new Object[] {P_unique,lastPage});
+		int pagenum=template.queryForObject(commentnumSQL,Integer.class,P_unique );
 		result.put("commnets", commnets);
 		result.put("pagenum", pagenum);
 		return result;
 	}
+
+
+
+	@Override
+	public int updateLike(int c_unique) {
+		System.out.println("like"+c_unique);
+		String likeupdateSQL="UPDATE comment SET commentLikes = commentLikes + 1 WHERE c_unique = ?";
+		template.update(likeupdateSQL,c_unique);
+		String likeSQL="select commentLikes from comment where c_unique=?";
+		int like=template.queryForObject(likeSQL,Integer.class,c_unique);
+		return like;
+	}
+
+
+
+	@Override
+	public int commentDelete(Comment comment) {
+	    String commentDeleteSQL = "DELETE FROM comment WHERE c_unique = ?";
+	    String commentnumSQL = "SELECT COUNT(*) FROM comment WHERE p_unique = ?";
+	    template.update(commentDeleteSQL, comment.getC_unique());
+	    int commentnum = template.queryForObject(commentnumSQL, Integer.class, comment.getP_unique());
+	    System.out.println("남은 댓글 수: " + commentnum);
+	    return commentnum;
+	}
+	
+	
 
 }

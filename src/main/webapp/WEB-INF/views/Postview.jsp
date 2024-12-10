@@ -131,7 +131,9 @@
     <div id="commentListContainer" class="comment-list">
 	<c:forEach items="${comments}" var="commentList" varStatus="loop">
 		<div class='comment-item'>
-		<p><b>${commentList.id }</b> ${formattedDates[loop.index]} <button id="like-${commentList.c_unique}">❤️${commentList.commentLikes}</button></p>
+		<p><b>${commentList.id }</b> ${formattedDates[loop.index]} <button class="like" data-num="${commentList.c_unique}">❤️${commentList.commentLikes}</button>
+			<button class="del" data-del="${commentList.c_unique}">X</button>
+		</p>
 		<p>${commentList.comments}</p>
 		</div>
 	</c:forEach>

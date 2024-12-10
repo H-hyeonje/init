@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,8 +49,11 @@ public class commentController {
 	
 	@GetMapping(value = "/readComment", produces = "application/json")
 	@ResponseBody
-	public Map<String, Object> getCommentList(@RequestParam int p_unique, @RequestParam int page) {
-	    ArrayList<String> formattedDates=new ArrayList<String>();
+	public Map<String, Object> getCommentList(
+	    @RequestParam int p_unique,
+	    @RequestParam(required = false, defaultValue = "1") int page) {
+	
+		ArrayList<String> formattedDates=new ArrayList<String>();
 	    Map<String, Object> result = commentService.getcommentList(p_unique, page);
 	    
 	    List<Comment> comment=(List<Comment>)result.get("commnets");
@@ -65,13 +69,13 @@ public class commentController {
 			 }
 	    	
 	}
-	   
+	    
 	    
 	    List<Integer> pagenum=Page.calculateTotalPages((int) result.get("pagenum"));
-	    System.out.println("왔냐"+pagenum.getLast());
+	
 	    int tol = 0;
 	    if (pagenum != null && !pagenum.isEmpty()) {  // totalPage가 null이 아니고 비어있지 않은지 확인
-	        tol = pagenum.getLast();  // 정상적으로 getLast() 호출
+	        tol = pagenum.get(pagenum.size()-1);  // 정상적으로 getLast() 호출
 	    } else {
 	        // totalPage가 null이거나 비어있을 경우 기본값 설정
 	        tol = 0;
@@ -85,5 +89,27 @@ public class commentController {
 
 	
 	
-}
+  }
+
+	@PostMapping(value = "/updateLike", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public int updateLike(@RequestBody Comment comment ) {
+		int c_unique=comment.getC_unique();
+		int like=commentService.updateLike(c_unique);
+		System.out.println(like);
+		return like;
+	}
+	
+	@PostMapping(value = "/commentDelete", consumes = "application/json", produces = "application/json")
+	@ResponseBody
+	public Map<String, Object> commentDelete(@RequestBody Comment comment) {
+	    int remainingComments = commentService.commentDelete(comment);
+	    Map<String, Object> response = new HashMap<String, Object>();
+	    response.put("remainingComments", remainingComments);
+	    response.put("maxPage", Math.ceil(remainingComments / 5.0));
+	    return response;
+	}
+	
+	
+	
 }
