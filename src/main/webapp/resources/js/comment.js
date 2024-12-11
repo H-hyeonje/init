@@ -1,3 +1,5 @@
+
+
 function submitComment() {
     var commentText = $("#commentText").val();
     var userid = $("#id").val();
@@ -86,15 +88,14 @@ $("#commentListContainer").on("click", ".like", function() {
 	
 });
 
-
 // 삭제
 $("#commentListContainer").on("click", ".del", function() {
     var postid = $("#Punique").val();  // 게시물 ID
     var num = $(this).data("del");  // 삭제할 댓글의 c_unique
 
     alert("삭제버튼! num-" + num);
-
-    // 댓글 삭제 요청
+	
+ 
     $.ajax({
         url: "/localMaster/commentDelete",
         type: "POST",
@@ -177,6 +178,49 @@ function comments(response) {
         "<div id='page'> " + str2 + " </div>"
     );
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    // 페이지 버튼 클릭 이벤트
+    document.querySelectorAll('.page').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const page = event.target.getAttribute('data-page'); // data-page 값 가져오기
+            fetch(`/comments?postId=1&page=${page}`) // 서버에 Ajax 요청
+                .then(response => response.text())
+                .then(data => {
+                    // 댓글 리스트 갱신
+                    document.querySelector('.comments').innerHTML = data;
+                })
+                .catch(error => console.error('Error fetching comments:', error));
+        });
+    });
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    var postid = $("#Punique").val();
+    
+    // 이벤트 위임을 사용하여 동적으로 생성된 버튼에도 이벤트 연결
+    $(document).on('click', '.page, .commentPaging', function() {
+        var pageNumber = $(this).data('page');
+        console.log('페이지 ' + pageNumber + ' 버튼이 클릭되었습니다.');
+        
+        $.ajax({
+            url: "/localMaster/readComment",
+            type: "GET",
+            data: {
+                p_unique: postid,
+                page: pageNumber
+            },
+            success: function(response) {
+                comments(response);
+            },
+            error: function(xhr, status, error) {
+                console.error("댓글 목록 조회 실패:", error);
+            }
+        });
+    });
+});
+
 
 
 function comments(response) {

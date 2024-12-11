@@ -1,11 +1,12 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>${Post.title}</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="${pageContext.request.contextPath}/resources/js/comment.js" defer></script>
     <style>
         body {
@@ -141,7 +142,7 @@
 	<input type="hidden" id="pages" value="${tol}"><p>
 	<c:forEach items="${totalPage}" var="total" varStatus="loop">
 		<c:if test="${total>=1}">
-		<button id="page-${total}">[${total}]</button>
+		<button class="page" data-page="${total}">[${total}]</button>
 		</c:if>
 	</c:forEach>
 	</div>

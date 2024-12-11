@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="${pageContext.request.contextPath}/resources/js/comment.js" defer></script>
     <meta charset="UTF-8">
     <title>게시글 작성</title>
     <style>
@@ -88,7 +90,7 @@
         </div>
         
         <div class="form-group">
-            <label for="contents">내용</label>
+            <label for="contents">내용</label><span><a href="Map">지도</a></span>
             <textarea id="contents" name="contents" rows="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
         </div>
         
