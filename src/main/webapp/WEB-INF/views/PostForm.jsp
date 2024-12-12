@@ -90,7 +90,7 @@
         </div>
         
         <div class="form-group">
-            <label for="contents">내용</label><span><a href="Map">지도</a></span>
+            <label for="contents">내용</label><span><a href="/localMaster/Map">지도</a></span>
             <textarea id="contents" name="contents" rows="5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;"></textarea>
         </div>
         
