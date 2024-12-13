@@ -26,4 +26,14 @@ public class mapRepositoryImpl implements mapRepository{
 		return result;
 	}
 
-}
+
+	@Override
+	public List<Dining> getDiningList(String search) {
+		DiningRowMapper diningRowMapper=new DiningRowMapper();
+		String sql = "SELECT * FROM Dining WHERE name LIKE ? OR address LIKE ? OR menu LIKE ?";
+	    return template.query(sql,diningRowMapper, "%" + search + "%","%" + search + "%","%" + search + "%"
+	    );
+	}
+	}
+
+

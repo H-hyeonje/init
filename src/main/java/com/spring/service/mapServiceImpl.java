@@ -19,4 +19,10 @@ public class mapServiceImpl implements mapService {
 		return result;
 	}
 
+	@Override
+	public List<Dining> getDiningList(String search) {
+		
+		return mapRepository.getDiningList(search);
+	}
+
 }

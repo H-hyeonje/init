@@ -68,6 +68,7 @@
         <a href="Post">Post작성</a>
         <a href="PostAllBoard/1">게시판</a>
         <a href="editor">에디터</a>
+        <a href="DiningEdit">맛집 추가</a>
     </div>
 
     <form class="search-form" action="PostBoard/1" method="get">
@@ -79,5 +80,6 @@
             <input value="가자" type="submit">
         </p>
     </form>
+	
 </body>
 </html>

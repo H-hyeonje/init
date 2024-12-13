@@ -1,102 +1,111 @@
-// 전역 변수로 map 객체를 선언하여 한 번만 생성하고 이후에는 재사용합니다.
-var map;
-
-// 지도 생성 함수
-function createMap() {
-    var mapContainer = document.getElementById('imageMap'); // 지도를 표시할 div
-    var mapOption = { 
-        center: new kakao.maps.LatLng(33.450701, 126.570667), // 지도의 중심좌표
-        level: 13 // 지도의 확대 레벨
+var markers = [];
+var markerMode = false;
+var markernum = 0;
+var mapContainer = document.getElementById('map'),
+    mapOption = {
+        center: new kakao.maps.LatLng(36.5, 128.0),
+        level: 13
     };
+var map = new kakao.maps.Map(mapContainer, mapOption);
 
-    // 지도를 표시할 div와  지도 옵션으로  지도를 생성합니다.
-    map = new kakao.maps.Map(mapContainer, mapOption);
-}
-
-function marker(response) {
-    var positions = [];
-    
-    // response에서 마커 데이터를 가져와 positions 배열에 저장
-    for (var i = 0; i < response.length; i++) {
-        positions.push({
-            title: response[i].name, // 타이틀로 사용
-            latlng: new kakao.maps.LatLng(response[i].latitude, response[i].longitude), // 위도와 경도
-            name: response[i].name, // content로 사용할 name 추가
-			address:response[i].address,
-			phone1:response[i].phone1,
-			menu:response[i].menu
-        });
+$(".region-btn").on("click", function () {
+    var region = $(this).data("num");
+    var latitude = null;
+    var longitude = null;
+    var level = null;
+    if (region === "서울") {
+        latitude = 37.5665;
+        longitude = 126.9780;
+        level = 9
     }
+    if (region === "부산") {
+        latitude = 35.1796;
+        longitude = 129.0756;
+        level = 10
+    }
+    if (region === "대구") {
+        latitude = 35.8723;
+        longitude = 128.6025;
+        level = 10
+    }
+    var latLng = new kakao.maps.LatLng(latitude, longitude);
+    map.setCenter(latLng); // 새로운 좌표로 지도 중심 변경
+    map.setLevel(level);
+});
 
-    // 마커 이미지의 이미지 주소입니다
-    var imageSrc = "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png"; 
+document.getElementById("marker").addEventListener("click", function () {
+    markerMode = !markerMode;
+    this.textContent = markerMode ? "마커모드 off" : "마커모드 on";
+});
 
-    // 기존 마커들을 삭제하거나 새로 추가할 수 있습니다.
-    for (let i = 0; i < positions.length; i++) {  // let 사용으로 i 값 고정
-        var imageSize = new kakao.maps.Size(24, 35); // 마커 이미지 크기
-        var markerImage = new kakao.maps.MarkerImage(imageSrc, imageSize); // 마커 이미지 생성
+document.getElementById("SearchForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var search = document.getElementById("Search").value;
+    var ps = new kakao.maps.services.Places();
+});
 
-        // 마커를 생성하고 지도에 추가
+kakao.maps.event.addListener(map, "click", function (event) {
+    if (markerMode) {
+        var latLng = event.latLng;
+
+        // 마커 생성
         var marker = new kakao.maps.Marker({
-            map: map, // 마커를 표시할 지도
-            position: positions[i].latlng, // 마커 위치
-            title: positions[i].title, // 마커의 타이틀
-            image: markerImage // 마커 이미지
+            position: latLng,
+            clickable: true
         });
 
-        // 마커 클릭 시 해당 마커에 대한 정보창 표시
-		var infowindow = new kakao.maps.InfoWindow({
-		    content: `
-			<div class="info-window-content">
-			    <strong class="info-title">${positions[i].name}</strong><br>
-			    <span class="info-address">${positions[i].address}</span><br>
-			    <span class="info-phone">${positions[i].phone1}</span><br>
-			    <p class="info-menu">${positions[i].menu}</p>
-			</div>
-		    ` // 다양한 정보를 보여줄 수 있음
-		});
+        marker.setMap(map); // 지도에 마커 표시
+        markerMode = false;
+        document.getElementById("marker").textContent = "마커모드 on";
+        markernum++;
 
-        // 클로저를 이용해 marker와 infowindow를 연결
-        kakao.maps.event.addListener(marker, 'click', (function(marker, infowindow) {
-            return function() {
-                infowindow.open(map, marker);  // 클릭 시 정보창을 마커와 함께 열기
-            };
-        })(marker, infowindow));  // 즉시 호출 함수로 클로저를 사용하여 변수 전달
+        // 인포윈도우 내용에 마커 번호와 삭제 버튼 추가
+        var infowindowContent = `
+            <div>
+                <button class='marker-delete-btn' data-index='${markernum}'>x</button>
+                <p>Marker #${markernum}</p>
+            </div>
+        `;
+        var infowindow = new kakao.maps.InfoWindow({
+            content: infowindowContent
+        });
+
+        // 마커 클릭 시 인포윈도우 열기
+        kakao.maps.event.addListener(marker, "click", function () {
+            // 이미 다른 인포윈도우가 열려있으면 닫고, 클릭한 마커의 인포윈도우 열기
+            if (infowindow.getMap()) {
+                infowindow.close(); // 이미 열려있으면 닫기
+            } else {
+                // 인포윈도우가 닫혀 있으면 열기
+                markers.forEach(item => {
+                    if (item.infowindow.getMap()) {
+                        item.infowindow.close(); // 다른 마커의 인포윈도우는 닫기
+                    }
+                });
+                infowindow.open(map, marker); // 클릭한 마커의 인포윈도우 열기
+            }
+        });
+
+        // 마커와 인포윈도우 배열에 저장
+        markers.push({ marker: marker, infowindow: infowindow });
+
+        // 삭제 버튼 클릭 이벤트 (동적 바인딩 필요)
+        setTimeout(() => {
+            var deleteButton = document.querySelector(`.marker-delete-btn[data-index='${markernum}']`);
+            if (deleteButton) {
+                deleteButton.addEventListener("click", function () {
+                    // 마커 삭제
+                    marker.setMap(null);
+                    infowindow.close();
+
+                    // 배열에서 제거
+                    markers = markers.filter(item => item.marker !== marker);
+                });
+            }
+        }, 0);
     }
-}
-
-function makeOverListener(map, marker, infowindow) {
-    return function() {
-        infowindow.open(map, marker);
-    };
-}
-
-// 인포윈도우를 닫는 클로저를 만드는 함수입니다 
-function makeOutListener(infowindow) {
-    return function() {
-        infowindow.close();
-    };
-}
-
-// 최초 페이지 로드 시 지도 생성
-$(document).ready(function() {
-    createMap(); // 한 번만 호출하여 지도 생성
 });
 
-// AJAX 요청 후 마커 업데이트
-$("#Dining").on("click", function() {
-    var page = $("#Dining").val(); // 버튼의 value 값을 가져옵니다.
-    $.ajax({
-        url: "/localMaster/Maps",
-        type: "GET",
-        contentType: "application/json;charset=UTF-8",
-        data: { num: page }, // 서버로 전달할 데이터
-        success: function(response) {
-            marker(response); // 서버 응답으로 마커 추가
-        },
-        error: function(xhr, status, error) {
-            console.error("좋아요 실패: " + error);
-        }
-    });
-});
+
+
 
