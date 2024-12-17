@@ -1,266 +1,369 @@
-// 전역 변수
-var map; // 지도 객체
-var ps; // 장소 검색 객체
-var infoWindow; // 인포창 객체
-var searchMarkers = []; // 검색 마커 배열
-var myList = []; // My 리스트 배열
-var originalMarkers = []; // 원래 마커 데이터를 저장하는 배열
-var myListMarkers = [];
-var currentOpenMarker = null; // 현재 열린 인포창의 마커
+document.addEventListener("DOMContentLoaded", function() {
+    var map, ps;
 
-// 지도 초기화
-window.onload = function () {
-    var container = document.getElementById('map');
-    var options = {
-        center: new kakao.maps.LatLng(37.5665, 126.9780),
-        level: 5
-    };
+    var searchResultsOriginal = []; 
+    var searchMarkersOriginal = [];
+    var searchList = [];
+    var searchMarkers = [];
+    var myList = [];           
+    var myListMarkers = [];    
 
-    map = new kakao.maps.Map(container, options);
-    ps = new kakao.maps.services.Places();
-    infoWindow = new kakao.maps.InfoWindow({ zIndex: 1 });
-};
+    var infoWindowHover = new kakao.maps.InfoWindow(); 
+    var infoWindowClick = new kakao.maps.InfoWindow();
+    var activeMarker = null;   
 
-// 마커 삭제 함수
-function clearMarker(marker) {
-    if (marker) {
-        marker.setMap(null);
+    var markerImageActive = createMarkerImage(
+        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', 
+        36, 52, 18, 52
+    );
+
+    var markerImageYellow = createMarkerImage(
+        'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png', 
+        24, 35, 12, 35
+    );
+
+    var mapContainer = document.getElementById('map');
+    var searchBox = document.getElementById("searchBox");
+    var searchBtn = document.getElementById("searchBtn");
+    var placesListEl = document.getElementById("placesList");
+    var myListEl = document.getElementById("myList");
+
+    initMap();
+    initEvents();
+
+    function initMap() {
+        var mapOption = { 
+            center: new kakao.maps.LatLng(37.5665, 126.9780), 
+            level: 11 
+        };
+        map = new kakao.maps.Map(mapContainer, mapOption);
+        ps = new kakao.maps.services.Places();
     }
-}
 
-// 장소 검색
-function searchPlaces() {
-    var keyword = document.getElementById('keyword').value;
-
-    if (!keyword.trim()) {
-        alert('검색어를 입력해주세요!');
-        return;
-    }
-
-    ps.keywordSearch(keyword, function (data, status) {
-        if (status === kakao.maps.services.Status.OK) {
-            displayPlaces(data);
-        } else {
-            alert('검색 결과가 없습니다.');
-        }
-    });
-}
-
-// 인포창 토글 기능
-function toggleInfoWindow(marker, content) {
-    if (currentOpenMarker === marker) {
-        infoWindow.close();
-        currentOpenMarker = null;
-    } else {
-        infoWindow.setContent(content);
-        infoWindow.open(map, marker);
-        currentOpenMarker = marker;
-    }
-}
-
-function displayPlaces(places) {
-    console.log('검색된 장소:', places); // 검색된 장소 로그 출력
-
-    var listEl = document.getElementById('placesList');
-    var bounds = new kakao.maps.LatLngBounds();
-
-    // 기존 마커 초기화
-    searchMarkers.forEach(item => clearMarker(item.marker));
-    searchMarkers = [];
-    originalMarkers = []; // 원본 마커 배열 초기화
-
-    listEl.innerHTML = '';
-
-    for (let i = 0; i < places.length; i++) {
-        let place = places[i];
-        let position = new kakao.maps.LatLng(place.y, place.x);
-
-        // 마커 생성
-        let marker = new kakao.maps.Marker({
-            position: position,
-            map: map
+    function initEvents() {
+        kakao.maps.event.addListener(map, 'click', function () {
+            resetActiveMarker();
+            closeInfoWindows();
         });
 
-        // 검색 마커 및 원본 마커 저장
-        searchMarkers.push({ id: place.id, marker: marker });
-        originalMarkers.push({ id: place.id, lat: place.y, lng: place.x, name: place.place_name });
+        searchBtn.addEventListener("click", function() {
+            var keyword = searchBox.value.trim();
+            if (keyword === "") {
+                alert("검색어를 입력하세요");
+                return;
+            }
+            ps.keywordSearch(keyword, placesSearchCB);
+        });
+    }
 
-        console.log('현재 원본 마커 배열 상태:', originalMarkers); // 원본 마커 배열 상태 출력
+    function placesSearchCB(data, status) {
+        if (status === kakao.maps.services.Status.OK) {
+            clearSearchResults(); 
 
-        // 인포창 내용 설정
-        let content = `
-            <div style="padding:5px; font-size:12px;">
-                <strong>${place.place_name}</strong><br>
-                ${place.road_address_name || place.address_name}
+            data.forEach(function(place, i) {
+                place.originalIndex = i;
+                place.inMyList = false; 
+            });
+            
+            searchResultsOriginal = data.slice();
+            searchMarkersOriginal = data.map(function(place) {
+                var marker = createMarker(new kakao.maps.LatLng(place.y, place.x));
+                marker.isMyList = false;
+                marker.placeId = place.id;
+                marker.originalIndex = place.originalIndex;
+                return marker;
+            });
+
+            searchList = data.slice();
+            searchMarkers = searchMarkersOriginal.slice();
+
+            renderSearchResults(true);
+        } else {
+            alert("검색 결과가 없습니다.");
+        }
+    }
+
+    function renderSearchResults(setBoundsOnFirstLoad) {
+        placesListEl.innerHTML = ""; 
+        var bounds = new kakao.maps.LatLngBounds();
+
+        searchList.sort((a,b) => a.originalIndex - b.originalIndex);
+        searchMarkers.sort((a,b) => a.originalIndex - b.originalIndex);
+
+        searchList.forEach(function(place, index) {
+            var marker = searchMarkers[index];
+
+            if (!place.inMyList) {
+                marker.setMap(map);
+            } else {
+                marker.setMap(null);
+            }
+
+            addMarkerHoverEvent(marker, place);
+            addMarkerClickEvent(marker, place);
+
+            var listItem = createSearchListItem(place, index, marker);
+            placesListEl.appendChild(listItem);
+
+            if (!place.inMyList) {
+                bounds.extend(marker.getPosition());
+            }
+        });
+
+        if (setBoundsOnFirstLoad) {
+            map.setBounds(bounds);
+        }
+    }
+
+    function createMarker(position, image) {
+        var markerOptions = { position: position };
+        if (image) {
+            markerOptions.image = image;
+        }
+        return new kakao.maps.Marker(markerOptions);
+    }
+
+    function createMarkerImage(src, width, height, offsetX, offsetY) {
+        return new kakao.maps.MarkerImage(
+            src,
+            new kakao.maps.Size(width, height),
+            { offset: new kakao.maps.Point(offsetX, offsetY) }
+        );
+    }
+
+    function addMarkerHoverEvent(marker, place) {
+        kakao.maps.event.addListener(marker, 'mouseover', function() {
+            if (!marker.isMyList && activeMarker !== marker) {
+                infoWindowHover.setContent('<div style="padding:5px;font-size:12px;">' + place.place_name + '</div>');
+                infoWindowHover.open(map, marker);
+            }
+        });
+        kakao.maps.event.addListener(marker, 'mouseout', function() {
+            if (!marker.isMyList) {
+                infoWindowHover.close();
+            }
+        });
+    }
+
+    function addMarkerClickEvent(marker, place) {
+        kakao.maps.event.addListener(marker, 'click', function () {
+            if (marker.isMyList) {
+                // 마이리스트 마커 로직
+                if (!marker.myInfoWindow) {
+                    marker.myInfoWindow = new kakao.maps.InfoWindow();
+                    marker.myInfoOpen = false;
+                }
+
+                if (!marker.myInfoOpen) {
+                    showMyListInfoWindow(marker, place);
+                } 
+                // 열려있다면 X를 누르기 전까지 아무동작 안함
+            } else {
+                // 검색 마커 로직
+                updateActiveMarker(marker);
+                showInfoWindowClick(marker, place);
+            }
+        });
+    }
+
+    function showMyListInfoWindow(marker, place) {
+        // 각 마커별 고유한 closeBtnId 생성
+        var closeBtnId = 'infowindow-close-' + place.id;
+        var iwContent = `
+            <div style="position:relative;padding:10px;font-size:14px;max-width:200px;">
+                <div style="position:absolute;right:5px;top:5px;cursor:pointer;" id="${closeBtnId}" class="infowindow-close-btn">X</div>
+                <b>${place.place_name}</b><br>
+                주소: ${place.address_name || "정보 없음"}
             </div>
         `;
 
-        // 마커 클릭 이벤트
-        kakao.maps.event.addListener(marker, 'click', function () {
-            toggleInfoWindow(marker, content);
+        marker.myInfoWindow.setContent(iwContent);
+        marker.myInfoWindow.open(map, marker);
+        marker.myInfoOpen = true;
+
+        kakao.maps.event.addListener(marker.myInfoWindow, 'domready', function() {
+            var closeBtn = document.getElementById(closeBtnId);
+            if (closeBtn) {
+                closeBtn.addEventListener("click", function() {
+                    // X 버튼으로 인포윈도우 닫기
+                    marker.myInfoWindow.close();
+                    marker.myInfoOpen = false;
+                });
+            }
+        });
+    }
+
+    function createSearchListItem(place, index, marker) {
+        var listItem = document.createElement("div");
+        listItem.className = "listItem";
+
+        var buttonHtml = place.inMyList 
+           ? "<span style='color:gray;'>저장됨</span>" 
+           : `<button type="button" data-place-id="${place.id}">저장</button>`;
+
+        listItem.innerHTML = `
+            <span><b>${index + 1}. ${place.place_name}</b></span>
+            ${buttonHtml}
+        `;
+
+        listItem.addEventListener('click', function (e) {
+            if (e.target.tagName.toLowerCase() !== 'button') {
+                if (!marker.isMyList) {
+                    updateActiveMarker(marker);
+                    showInfoWindowClick(marker, place);
+                    map.setCenter(marker.getPosition());
+                }
+            }
         });
 
-        // 리스트 항목 생성
-        var itemEl = document.createElement('li');
-        itemEl.innerHTML = `
-            <span style="cursor:pointer;"><strong>${place.place_name}</strong></span><br>
-            <small>${place.road_address_name || place.address_name}</small><br>
-            <button onclick="swapMarker('${place.id}', ${place.y}, ${place.x}, '${place.place_name}')">My 리스트 추가</button>
-        `;
-        itemEl.style.padding = '10px';
-        itemEl.style.borderBottom = '1px solid #ddd';
-
-        // 리스트 클릭 이벤트
-        (function (marker, content) {
-            itemEl.onclick = function (event) {
-                if (event.target.tagName === 'BUTTON') return; // 버튼 클릭 무시
-                map.panTo(marker.getPosition());
-                toggleInfoWindow(marker, content);
-            };
-        })(marker, content);
-
-        listEl.appendChild(itemEl);
-        bounds.extend(position);
-    }
-
-    map.setBounds(bounds);
-}
-
-
-
-
-
-
-// My 리스트에 마커 추가
-function swapMarker(id, lat, lng, name) {
-    if (myList.some(item => item.id === id)) {
-        alert('이미 My 리스트에 추가된 장소입니다!');
-        return;
-    }
-
-    const userConfirmed = confirm(`"${name}"을 My 리스트에 추가하시겠습니까?\n위도: ${lat}, 경도: ${lng}`);
-
-    if (userConfirmed) {
-        // 기존 검색 마커 삭제
-        let index = searchMarkers.findIndex(item => item.id === id);
-        if (index !== -1) {
-            clearMarker(searchMarkers[index].marker);
-            searchMarkers.splice(index, 1);
+        if (!place.inMyList) {
+            var saveBtn = listItem.querySelector('button');
+            saveBtn.addEventListener('click', function(evt) {
+                evt.stopPropagation();
+                addToMyList(place, marker);
+            });
         }
 
-        // My 리스트 마커 생성
-        let markerImage = new kakao.maps.MarkerImage(
-            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png',
-            new kakao.maps.Size(24, 35)
-        );
-
-        let newMarker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(lat, lng),
-            map: map,
-            image: markerImage
-        });
-
-        // My 리스트에 마커 추가
-        myList.push({ id, name, marker: newMarker });
-        
-        // My 리스트에 마커 정보 저장
-        myListMarkers.push({ id, lat, lng, name });
-
-        // 콘솔로 상태 출력
-        console.log('현재 My 리스트 마커 배열 상태:', myListMarkers);
-
-        updateMyList();
-    } else {
-        alert('My 리스트에 추가가 취소되었습니다.');
+        return listItem;
     }
-}
 
+    function addToMyList(place, marker) {
+        // 기존 검색 인포윈도우 닫기
+        infoWindowClick.close();
+        resetActiveMarker();
 
+        var coords = new kakao.maps.LatLng(place.y, place.x);
+        var myMarker = createMarker(coords, markerImageYellow);
+        myMarker.setMap(map);
+        myMarker.isMyList = true; 
+        myMarker.placeId = place.id;
+        myMarker.originalIndex = place.originalIndex;
 
+        myListMarkers.push(myMarker);
+        myList.push(place);
 
-// My 리스트 갱신
-function updateMyList() {
-    var myListEl = document.getElementById('myPlacesList');
-    myListEl.innerHTML = '';
+        place.inMyList = true;
+        marker.setMap(null);
 
-    for (let i = 0; i < myList.length; i++) {
-        let item = myList[i];
-        var itemEl = document.createElement('li');
-        itemEl.innerHTML = `
-            <span>${item.name}</span>
-            <button onclick="removeFromMyList('${item.id}')">삭제</button>
-        `;
-        itemEl.style.padding = '10px';
-        itemEl.style.borderBottom = '1px solid #ddd';
+        addMarkerClickEvent(myMarker, place);
 
-        myListEl.appendChild(itemEl);
+        renderSearchListAgain();
+        renderMyList();
+
+        // 추가하자마자 마이리스트 인포윈도우 표시
+        showMyListInfoWindow(myMarker, place);
     }
-}
 
-function removeFromMyList(id) {
-    let index = myList.findIndex(item => item.id === id);
+    function renderMyList() {
+        myListEl.innerHTML = "";
+        if (myList.length === 0) {
+            myListEl.innerHTML = "<p>저장된 장소가 없습니다.</p>";
+            return;
+        }
 
-    if (index !== -1) {
-        let item = myList[index];
-        clearMarker(item.marker); // My 리스트 마커 삭제
-
-        // My 리스트에서 삭제한 후 원래 마커 복원
-        let original = myListMarkers.find(marker => marker.id === id);
-        if (original) {
-            let restoredMarker = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(original.lat, original.lng), // 원래 위치
-                map: map
-            });
-
-            searchMarkers.push({ id: original.id, marker: restoredMarker });
-
-            // 복원된 마커에 클릭 이벤트 추가
-            let content = `
-                <div style="padding:5px; font-size:12px;">
-                    <strong>${original.name}</strong>
-                </div>
+        myList.forEach(function (place, index) {
+            var listItem = document.createElement("div");
+            listItem.className = "listItem";
+            listItem.innerHTML = `
+                <span>${index + 1}. ${place.place_name}</span>
+                <button type="button" style="color: red;">삭제</button>
             `;
-            kakao.maps.event.addListener(restoredMarker, 'click', function () {
-                toggleInfoWindow(restoredMarker, content);
+            var delBtn = listItem.querySelector('button');
+            delBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                removeFromMyList(index);
             });
+
+            myListEl.appendChild(listItem);
+        });
+    }
+
+    function removeFromMyList(index) {
+        var place = myList[index];
+        var myMarker = myListMarkers[index];
+
+        // 마커 인포윈도우 열려있다면 닫기
+        if (myMarker.myInfoWindow && myMarker.myInfoOpen) {
+            myMarker.myInfoWindow.close();
+            myMarker.myInfoOpen = false;
         }
 
-        myList.splice(index, 1); // My 리스트에서 제거
-        myListMarkers.splice(myListMarkers.findIndex(item => item.id === id), 1); // 마커 정보 배열에서 제거
-        updateMyList();
-    }
-}
-
-
-// My 리스트 업데이트
-function updateMyList() {
-    var myListEl = document.getElementById('myPlacesList');
-    myListEl.innerHTML = '';
-
-    for (let i = 0; i < myList.length; i++) {
-        let item = myList[i];
-
-        var itemEl = document.createElement('li');
-        itemEl.innerHTML = `
-            <span>${item.name}</span>
-            <button onclick="removeFromMyList('${item.id}')">삭제</button>
-        `;
-        itemEl.style.padding = '10px';
-        itemEl.style.cursor = 'pointer';
-
-        myListEl.appendChild(itemEl);
-    }
-}
-
-// My 리스트에서 삭제
-function removeFromMyList(id) {
-    let index = myList.findIndex(item => item.id === id);
-    if (index !== -1) {
-        clearMarker(myList[index].marker);
+        myMarker.setMap(null);
         myList.splice(index, 1);
-        updateMyList();
+        myListMarkers.splice(index, 1);
+        place.inMyList = false;
+
+        // 검색 마커 복원
+        var originalMarker = searchMarkers.find(m => m.placeId === place.id);
+        if (originalMarker) {
+            originalMarker.setMap(map);
+        }
+
+        renderMyList();
+        renderSearchListAgain();
     }
-}
 
+    function renderSearchListAgain() {
+        placesListEl.innerHTML = "";
+        searchMarkers.forEach(m => m.setMap(null));
+        renderSearchResults(false);
+    }
 
+    function updateActiveMarker(marker) {
+        if (activeMarker && activeMarker !== marker) {
+            resetMarkerImage(activeMarker);
+        }
+        marker.setImage(markerImageActive);
+        activeMarker = marker;
+    }
 
+    function resetMarkerImage(marker) {
+        if (marker.isMyList) {
+            marker.setImage(markerImageYellow);
+        } else {
+            marker.setImage(null); 
+        }
+    }
+
+    function resetActiveMarker() {
+        if (activeMarker) {
+            resetMarkerImage(activeMarker);
+            activeMarker = null;
+        }
+    }
+
+    function showInfoWindowClick(marker, place) {
+        infoWindowHover.close();
+        infoWindowClick.close();
+
+        var iwContent = `
+            <div style="padding:10px;font-size:14px;">
+                <b>${place.place_name}</b><br>
+                주소: ${place.address_name || "정보 없음"}
+            </div>
+        `;
+        infoWindowClick.setContent(iwContent);
+        infoWindowClick.open(map, marker);
+    }
+
+    function closeInfoWindows() {
+        infoWindowHover.close();
+        infoWindowClick.close();
+    }
+
+    function clearSearchResults() {
+        searchMarkers.forEach(function(marker) {
+            marker.setMap(null);
+        });
+        searchMarkers = [];
+        searchList = [];
+
+        searchMarkersOriginal.forEach(function(marker){
+            marker.setMap(null);
+        });
+        searchMarkersOriginal = [];
+        searchResultsOriginal = [];
+
+        placesListEl.innerHTML = "";
+    }
+});
